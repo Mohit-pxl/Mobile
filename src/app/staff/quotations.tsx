@@ -44,7 +44,7 @@ export default function QuotationsScreen() {
           <Ionicons name="arrow-back" size={22} color={colors.text2} />
         </Pressable>
         <Text style={[styles.title, { color: colors.foreground }]}>Quotations</Text>
-        <Pressable style={[styles.newBtn, { backgroundColor: colors.primary }]} onPress={() => {}}>
+        <Pressable style={[styles.newBtn, { backgroundColor: colors.primary }]} onPress={() => router.push("/(staff)/billing?mode=quotation")}>
           <Ionicons name="add" size={16} color="#000" />
           <Text style={styles.newBtnText}>New</Text>
         </Pressable>

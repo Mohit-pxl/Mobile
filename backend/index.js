@@ -84,6 +84,9 @@ app.get('/api/products', (req, res) => {
   if (req.query.lowStock === 'true') {
     filtered = filtered.filter(p => p.stock <= p.lowStockThreshold);
   }
+  if (req.query.category && req.query.category !== 'All') {
+    filtered = filtered.filter(p => p.category === req.query.category);
+  }
   if (req.query.search) {
     const s = req.query.search.toLowerCase();
     filtered = filtered.filter(p => p.name.toLowerCase().includes(s) || p.brand.toLowerCase().includes(s));
@@ -142,6 +145,32 @@ app.post('/api/customers', (req, res) => {
   res.json({ success: true, data: newCustomer });
 });
 
+app.post('/api/customers/:id/payments', (req, res) => {
+  const customer = mockData.customers.find(c => c._id === req.params.id);
+  if (!customer) return res.status(404).json({ success: false, message: "Customer not found" });
+  
+  const amount = Number(req.body.amount);
+  const paymentMode = req.body.paymentMode || "cash";
+  
+  customer.totalDue = (customer.totalDue || 0) - amount;
+  
+  // Create a payment record in invoices
+  const invoice = {
+    _id: uuidv4(),
+    invoiceNumber: `PAY-${Date.now().toString().slice(-4)}`,
+    customer: { _id: customer._id, name: customer.name, phone: customer.phone },
+    items: [],
+    subtotal: 0,
+    gstAmount: 0,
+    total: -amount,
+    paymentMode: paymentMode,
+    createdAt: new Date().toISOString(),
+  };
+  mockData.invoices.push(invoice);
+  
+  res.json({ success: true, data: { customer, invoice } });
+});
+
 // --- Billing & Invoices ---
 app.get('/api/billing/invoices', (req, res) => {
   let filtered = mockData.invoices;
@@ -158,13 +187,72 @@ app.get('/api/billing/invoices/:id', (req, res) => {
 });
 
 app.post('/api/billing/invoices', (req, res) => {
-  const invoice = { _id: uuidv4(), invoiceNumber: `INV-${Date.now()}`, createdAt: new Date().toISOString(), ...req.body };
+  const { items = [], paymentMode = 'cash', customerId } = req.body;
+
+  // Build enriched items
+  let subtotal = 0;
+  let gstAmount = 0;
+  const enrichedItems = items.map(item => {
+    const prod = mockData.products.find(p => p._id === (item.productId || item.product?._id));
+    const price = item.price || prod?.sellingPrice || 0;
+    const qty   = item.qty || 1;
+    const gstPct = prod?.gstPercent || 18;
+    const itemSubtotal = price * qty;
+    const itemGst = (itemSubtotal * gstPct) / 100;
+    subtotal  += itemSubtotal;
+    gstAmount += itemGst;
+    return {
+      product: prod
+        ? { _id: prod._id, name: prod.name, brand: prod.brand, category: prod.category, gstPercent: prod.gstPercent }
+        : { _id: item.productId, name: "Unknown" },
+      qty,
+      price,
+      gstPercent: gstPct,
+      subtotal: itemSubtotal,
+      gstAmount: itemGst,
+    };
+  });
+
+  const total = subtotal + gstAmount;
+
+  // Resolve customer
+  let customer = null;
+  if (customerId) {
+    customer = mockData.customers.find(c => c._id === customerId) || null;
+    if (customer) {
+      customer = { _id: customer._id, name: customer.name, phone: customer.phone };
+    }
+  }
+
+  const invoice = {
+    _id: uuidv4(),
+    invoiceNumber: `INV-${Date.now().toString().slice(-4)}`,
+    createdAt: new Date().toISOString(),
+    items: enrichedItems,
+    subtotal,
+    gstAmount,
+    total,
+    paymentMode,
+    paymentStatus: req.body.paymentStatus || "paid",
+    customer,
+  };
+
   mockData.invoices.push(invoice);
+
   // Update stock
-  invoice.items.forEach(item => {
+  enrichedItems.forEach(item => {
     const prod = mockData.products.find(p => p._id === item.product._id);
     if (prod) prod.stock -= item.qty;
   });
+
+  res.json({ success: true, data: invoice });
+});
+
+app.post('/api/billing/invoices/:id/mark-paid', (req, res) => {
+  const invoice = mockData.invoices.find(i => i._id === req.params.id);
+  if (!invoice) return res.status(404).json({ success: false, message: "Invoice not found" });
+  invoice.paymentStatus = "paid";
+  invoice.paymentMode = req.body.paymentMode || "cash";
   res.json({ success: true, data: invoice });
 });
 
@@ -180,9 +268,40 @@ app.get('/api/quotations/:id', (req, res) => {
 });
 
 app.post('/api/quotations', (req, res) => {
-  const q = { _id: uuidv4(), quotationNumber: `QT-${Date.now()}`, createdAt: new Date().toISOString(), ...req.body };
+  const q = { _id: uuidv4(), quotationNumber: `QT-${Date.now().toString().slice(-4)}`, createdAt: new Date().toISOString(), ...req.body };
   mockData.quotations.push(q);
   res.json({ success: true, data: q });
+});
+
+app.post('/api/quotations/:id/convert', (req, res) => {
+  const q = mockData.quotations.find(x => x._id === req.params.id);
+  if (!q) return res.status(404).json({ success: false, message: "Quotation not found" });
+  if (q.status === 'converted') return res.status(400).json({ success: false, message: "Already converted" });
+
+  q.status = 'converted';
+  
+  // Create an invoice
+  const invoice = {
+    _id: uuidv4(),
+    invoiceNumber: `INV-${Date.now().toString().slice(-4)}`,
+    customer: q.customer,
+    items: q.items,
+    subtotal: q.items.reduce((acc, item) => acc + item.subtotal, 0),
+    gstAmount: q.items.reduce((acc, item) => acc + item.gstAmount, 0),
+    total: q.total,
+    paymentMode: 'cash',
+    createdAt: new Date().toISOString(),
+  };
+  
+  mockData.invoices.push(invoice);
+  
+  // Update stock
+  invoice.items.forEach(item => {
+    const prod = mockData.products.find(p => p._id === item.product._id);
+    if (prod) prod.stock -= item.qty;
+  });
+
+  res.json({ success: true, data: { quotation: q, invoice } });
 });
 
 // --- Stock Movements ---
@@ -222,6 +341,18 @@ app.patch('/api/staff/:id/permissions', (req, res) => {
   const s = mockData.staff.find(x => x._id === req.params.id);
   if (s) {
     s.permissions = req.body.permissions;
+    res.json({ success: true, data: s });
+  } else {
+    res.status(404).json({ success: false, message: "Staff not found" });
+  }
+});
+
+app.patch('/api/staff/:id', (req, res) => {
+  const s = mockData.staff.find(x => x._id === req.params.id);
+  if (s) {
+    if (req.body.isActive !== undefined) {
+      s.isActive = req.body.isActive;
+    }
     res.json({ success: true, data: s });
   } else {
     res.status(404).json({ success: false, message: "Staff not found" });

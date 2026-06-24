@@ -81,7 +81,7 @@ export default function BrowseScreen() {
 
   const handleCategoryPress = (label: string) => {
     const apiCat = CATEGORY_API_MAP[label] ?? label;
-    router.push({ pathname: "/(tabs)/search", params: { category: apiCat } });
+    router.push({ pathname: "/category-products", params: { category: apiCat, label } });
   };
 
   return (

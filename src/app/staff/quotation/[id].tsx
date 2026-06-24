@@ -1,18 +1,20 @@
 import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
-import { apiGet, Quotation } from "@/services/api";
-import { useQuery } from "@tanstack/react-query";
+import { apiGet, apiPost, Quotation } from "@/services/api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export default function QuotationDetailScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const qc = useQueryClient();
 
   const { data: q, isLoading } = useQuery({
     queryKey: ["quotation", id],
@@ -21,6 +23,23 @@ export default function QuotationDetailScreen() {
       return res.data;
     },
     enabled: !!id,
+  });
+
+  const convertMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiPost<{ quotation: Quotation; invoice: { _id: string } }>(`/quotations/${id}/convert`, {});
+      return res.data;
+    },
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ["quotation", id] });
+      qc.invalidateQueries({ queryKey: ["quotations"] });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert("Success", "Quotation converted to invoice!", [
+        { text: "View Invoice", onPress: () => router.replace(`/staff/invoice/${data.invoice._id}`) },
+        { text: "OK" }
+      ]);
+    },
+    onError: (e: Error) => Alert.alert("Error", e.message),
   });
 
   const fmt = (n: number) => `₹${n.toLocaleString("en-IN")}`;
@@ -54,7 +73,7 @@ export default function QuotationDetailScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: 16, gap: 14, paddingBottom: insets.bottom + 24 }}>
+      <ScrollView contentContainerStyle={{ padding: 16, gap: 14, paddingBottom: insets.bottom + 100 }}>
         {q.customer && (
           <View style={[styles.customerBox, { backgroundColor: colors.bg2, borderColor: colors.border }]}>
             <Ionicons name="person-outline" size={16} color={colors.text3} />
@@ -84,6 +103,25 @@ export default function QuotationDetailScreen() {
           </View>
         </View>
       </ScrollView>
+
+      {q.status !== "converted" && (
+        <View style={[styles.bottomBar, { backgroundColor: colors.bg2, borderTopColor: colors.border, paddingBottom: insets.bottom + 8 }]}>
+          <Pressable
+            style={[styles.convertBtn, { backgroundColor: colors.primary, opacity: convertMutation.isPending ? 0.7 : 1 }]}
+            onPress={() => convertMutation.mutate()}
+            disabled={convertMutation.isPending}
+          >
+            {convertMutation.isPending ? (
+              <ActivityIndicator color="#000" size="small" />
+            ) : (
+              <>
+                <Ionicons name="receipt-outline" size={18} color="#000" />
+                <Text style={styles.convertBtnText}>Convert to invoice</Text>
+              </>
+            )}
+          </Pressable>
+        </View>
+      )}
     </View>
   );
 }
@@ -109,4 +147,7 @@ const styles = StyleSheet.create({
   totalRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   grandLabel: { fontSize: 15, fontWeight: "700", fontFamily: "Inter_700Bold" },
   grandVal: { fontSize: 18, fontWeight: "700", fontFamily: "Inter_700Bold" },
+  bottomBar: { padding: 14, borderTopWidth: 1 },
+  convertBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, borderRadius: 10, paddingVertical: 13 },
+  convertBtnText: { color: "#000", fontWeight: "700", fontFamily: "Inter_700Bold", fontSize: 13 },
 });

@@ -1,18 +1,35 @@
 import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React from "react";
-import { ActivityIndicator, FlatList, Linking, Pressable, StyleSheet, Text, View } from "react-native";
+import React, { useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Linking,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
-import { apiGet, Customer, Invoice } from "@/services/api";
-import { useQuery } from "@tanstack/react-query";
+import { apiGet, apiPost, Customer, Invoice } from "@/services/api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export default function CustomerLedgerScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const qc = useQueryClient();
+
+  const [showPayModal, setShowPayModal] = useState(false);
+  const [payAmount, setPayAmount] = useState("");
+  const [payMode, setPayMode] = useState<"cash" | "upi" | "card">("cash");
 
   const { data: customer } = useQuery({
     queryKey: ["customer", id],
@@ -32,11 +49,26 @@ export default function CustomerLedgerScreen() {
     enabled: !!id,
   });
 
+  const payMutation = useMutation({
+    mutationFn: async () => {
+      const amt = Number(payAmount);
+      if (!amt || isNaN(amt) || amt <= 0) throw new Error("Please enter a valid amount.");
+      await apiPost(`/customers/${id}/payments`, { amount: amt, paymentMode: payMode });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["customer", id] });
+      qc.invalidateQueries({ queryKey: ["customer-invoices", id] });
+      setShowPayModal(false);
+      setPayAmount("");
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    },
+    onError: (e: Error) => Alert.alert("Error", e.message),
+  });
+
   const inv = invoices || [];
   const fmt = (n: number) => `₹${n.toLocaleString("en-IN")}`;
   const fmtDate = (d: string) => new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 
-  const creditInvoices = inv.filter((i) => i.paymentMode === "credit");
   const totalDue = customer?.totalDue || 0;
 
   return (
@@ -70,6 +102,18 @@ export default function CustomerLedgerScreen() {
         </View>
       )}
 
+      {totalDue > 0 && (
+        <View style={styles.actionRow}>
+          <Pressable
+            style={[styles.payBtn, { backgroundColor: colors.primary }]}
+            onPress={() => setShowPayModal(true)}
+          >
+            <Ionicons name="cash-outline" size={16} color="#000" />
+            <Text style={styles.payBtnText}>Record Payment</Text>
+          </Pressable>
+        </View>
+      )}
+
       <FlatList
         data={inv}
         keyExtractor={(i) => i._id}
@@ -93,7 +137,9 @@ export default function CustomerLedgerScreen() {
               <Text style={[styles.invItems, { color: colors.text3 }]}>{invoice.items.length} items</Text>
             </View>
             <View style={styles.invRight}>
-              <Text style={[styles.invTotal, { color: colors.foreground }]}>{fmt(invoice.total)}</Text>
+              <Text style={[styles.invTotal, { color: colors.foreground }]}>
+                {invoice.total < 0 ? `- ${fmt(Math.abs(invoice.total))}` : fmt(invoice.total)}
+              </Text>
               <View style={[styles.modeBadge, { backgroundColor: invoice.paymentMode === "credit" ? colors.redBg : colors.greenBg }]}>
                 <Text style={[styles.modeText, { color: invoice.paymentMode === "credit" ? colors.redText : colors.greenText }]}>
                   {invoice.paymentMode.toUpperCase()}
@@ -103,6 +149,66 @@ export default function CustomerLedgerScreen() {
           </Pressable>
         )}
       />
+
+      <Modal visible={showPayModal} transparent animationType="slide" onRequestClose={() => setShowPayModal(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalBox, { backgroundColor: colors.bg2, borderColor: colors.border }]}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: colors.foreground }]}>Record Payment</Text>
+              <Pressable onPress={() => setShowPayModal(false)} hitSlop={8}>
+                <Ionicons name="close" size={22} color={colors.text2} />
+              </Pressable>
+            </View>
+            <TextInput
+              style={[styles.formInput, { color: colors.foreground, backgroundColor: colors.bg3, borderColor: colors.border }]}
+              placeholder="Amount (₹)"
+              placeholderTextColor={colors.text3}
+              keyboardType="numeric"
+              value={payAmount}
+              onChangeText={setPayAmount}
+            />
+            <Text style={[styles.fieldLabel, { color: colors.text3 }]}>Payment Mode</Text>
+            <View style={styles.modeRow}>
+              {(["cash", "upi", "card"] as const).map((mode) => (
+                <Pressable
+                  key={mode}
+                  style={[
+                    styles.modeBtn,
+                    {
+                      backgroundColor: payMode === mode ? colors.primary : colors.bg3,
+                      borderColor: payMode === mode ? colors.primary : colors.border2,
+                      flex: 1,
+                    },
+                  ]}
+                  onPress={() => setPayMode(mode)}
+                >
+                  <Text
+                    style={{
+                      color: payMode === mode ? "#000" : colors.text2,
+                      fontWeight: "700",
+                      fontFamily: "Inter_700Bold",
+                      fontSize: 13,
+                    }}
+                  >
+                    {mode.toUpperCase()}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+            <Pressable
+              style={[styles.submitBtn, { backgroundColor: colors.primary, opacity: payMutation.isPending ? 0.7 : 1 }]}
+              onPress={() => payMutation.mutate()}
+              disabled={payMutation.isPending || !payAmount}
+            >
+              {payMutation.isPending ? (
+                <ActivityIndicator color="#000" size="small" />
+              ) : (
+                <Text style={styles.submitText}>Save Payment</Text>
+              )}
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -119,6 +225,9 @@ const styles = StyleSheet.create({
   customerPhone: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 2 },
   dueBadge: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 20 },
   dueLabel: { fontSize: 12, fontWeight: "700", fontFamily: "Inter_700Bold" },
+  actionRow: { padding: 14, borderBottomWidth: 1, borderBottomColor: "rgba(0,0,0,0.05)" },
+  payBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 10, borderRadius: 10 },
+  payBtnText: { color: "#000", fontWeight: "700", fontFamily: "Inter_700Bold", fontSize: 13 },
   sectionLabel: { fontSize: 10, textTransform: "uppercase", letterSpacing: 0.6, fontFamily: "Inter_500Medium", paddingBottom: 8 },
   invRow: { flexDirection: "row", alignItems: "center", paddingVertical: 12, borderBottomWidth: 1, gap: 10 },
   invLeft: { flex: 1 },
@@ -130,4 +239,14 @@ const styles = StyleSheet.create({
   modeBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20 },
   modeText: { fontSize: 10, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
   empty: { textAlign: "center", paddingTop: 40, fontFamily: "Inter_400Regular" },
+  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.7)", justifyContent: "flex-end" },
+  modalBox: { borderTopLeftRadius: 20, borderTopRightRadius: 20, borderWidth: 1, padding: 20, gap: 14 },
+  modalHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  modalTitle: { fontSize: 16, fontWeight: "700", fontFamily: "Inter_700Bold" },
+  formInput: { borderWidth: 1, borderRadius: 9, paddingHorizontal: 12, paddingVertical: 11, fontSize: 13, fontFamily: "Inter_400Regular" },
+  fieldLabel: { fontSize: 11, fontFamily: "Inter_500Medium" },
+  modeRow: { flexDirection: "row", gap: 10 },
+  modeBtn: { borderWidth: 1, borderRadius: 8, paddingVertical: 10, alignItems: "center" },
+  submitBtn: { borderRadius: 10, paddingVertical: 13, alignItems: "center", marginTop: 4 },
+  submitText: { color: "#000", fontWeight: "700", fontFamily: "Inter_700Bold", fontSize: 14 },
 });
