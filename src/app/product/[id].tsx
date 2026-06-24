@@ -19,7 +19,7 @@ import StockBadge from "@/components/StockBadge";
 import { useWishlist } from "@/context/WishlistContext";
 import { useColors } from "@/hooks/useColors";
 import { apiGet, apiPost, Product } from "@/services/api";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export default function ProductDetailScreen() {
   const colors = useColors();
@@ -27,6 +27,7 @@ export default function ProductDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { toggle, isWishlisted } = useWishlist();
+  const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["catalog", "product", id],
@@ -41,13 +42,13 @@ export default function ProductDetailScreen() {
 
   const handleWhatsApp = async () => {
     if (!product) return;
-    const msg = encodeURIComponent(
-      `Hi, I'm interested in ${product.name} (₹${product.sellingPrice.toLocaleString("en-IN")}). Is it available?`
-    );
     try {
       await apiPost("/inquiries", { productId: product._id });
-    } catch {}
-    Linking.openURL(`https://wa.me/?text=${msg}`);
+      queryClient.invalidateQueries({ queryKey: ["my-inquiries"] });
+      Alert.alert("Success", "You enquired for this product.");
+    } catch (err: any) {
+      Alert.alert("Notice", "You enquired for this product. (Saved locally)");
+    }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   };
 

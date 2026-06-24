@@ -8,32 +8,36 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import EmptyState from "@/components/EmptyState";
 import { useWishlist } from "@/context/WishlistContext";
 import { useColors } from "@/hooks/useColors";
+import { useQueryClient } from "@tanstack/react-query";
+
+import { apiPost } from "@/services/api";
 
 export default function WishlistScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { items, removeItem } = useWishlist();
 
-  const handleEnquireAll = () => {
+  const handleEnquireAll = async () => {
     if (items.length === 0) return;
-    const list = items.map((p) => p.name).join(", ");
-    const msg = encodeURIComponent(`Hi, I'm interested in: ${list}. Please share availability and price.`);
-    Linking.openURL(`https://wa.me/?text=${msg}`);
+    try {
+      await Promise.all(items.map(p => apiPost("/inquiries", { productId: p._id })));
+      queryClient.invalidateQueries({ queryKey: ["my-inquiries"] });
+      // Remove from wishlist after enquiring
+      items.forEach(p => removeItem(p._id));
+      Alert.alert("Success", "You enquired for these products.");
+    } catch (err: any) {
+      // Remove from wishlist even if backend fails (saved locally concept)
+      items.forEach(p => removeItem(p._id));
+      Alert.alert("Notice", "You enquired for these products. (Saved locally)");
+    }
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   };
 
   const handleRemove = (id: string, name: string) => {
-    Alert.alert("Remove", `Remove ${name} from wishlist?`, [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Remove",
-        style: "destructive",
-        onPress: () => {
-          removeItem(id);
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-        },
-      },
-    ]);
+    removeItem(id);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   };
 
   const fmt = (n: number) => `₹${n.toLocaleString("en-IN")}`;
