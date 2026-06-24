@@ -1,10 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
-  FlatList,
   Pressable,
-  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -13,125 +11,213 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import EmptyState from "@/components/EmptyState";
-import ProductCard from "@/components/ProductCard";
-import { SkeletonRow } from "@/components/Skeleton";
-import { useWishlist } from "@/context/WishlistContext";
 import { useColors } from "@/hooks/useColors";
 import { apiGet, Product } from "@/services/api";
 import { useQuery } from "@tanstack/react-query";
 
+// Static category definitions matching wireframe
 const CATEGORIES = [
-  { label: "All", icon: "apps-outline" as const },
-  { label: "Mobiles", icon: "phone-portrait-outline" as const },
-  { label: "Audio", icon: "headset-outline" as const },
-  { label: "Earphones", icon: "headset-outline" as const },
-  { label: "Chargers", icon: "battery-charging-outline" as const },
-  { label: "Smart Watches", icon: "watch-outline" as const },
-  { label: "Laptops", icon: "laptop-outline" as const },
-  { label: "Accessories", icon: "grid-outline" as const },
+  { label: "Mobiles", icon: "📱", bg: "blue" as const },
+  { label: "Audio & Earbuds", icon: "🎧", bg: "amber" as const },
+  { label: "Wearables & Watches", icon: "⌚", bg: "green" as const },
+  { label: "Tablets & iPads", icon: "💻", bg: "neutral" as const },
+  { label: "Chargers & Cables", icon: "🔌", bg: "neutral" as const },
+  { label: "Cases & Covers", icon: "🛡️", bg: "neutral" as const },
 ];
+
+// Map wireframe category names → API category names
+const CATEGORY_API_MAP: Record<string, string> = {
+  "Mobiles": "Mobiles",
+  "Audio & Earbuds": "Audio",
+  "Wearables & Watches": "Smart Watches",
+  "Tablets & iPads": "Laptops",
+  "Chargers & Cables": "Chargers",
+  "Cases & Covers": "Accessories",
+};
 
 export default function BrowseScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { toggle, isWishlisted } = useWishlist();
-  const [activeCategory, setActiveCategory] = useState("All");
+  const [search, setSearch] = useState("");
 
-  const { data, isLoading, refetch, isRefetching } = useQuery({
-    queryKey: ["catalog", "products", activeCategory],
+  // Fetch all products to compute per-category counts
+  const { data } = useQuery({
+    queryKey: ["catalog", "products", "all"],
     queryFn: async () => {
-      const params = activeCategory !== "All" ? `?category=${encodeURIComponent(activeCategory)}` : "";
-      const res = await apiGet<Product[]>(`/catalog/products${params}`);
+      const res = await apiGet<Product[]>("/catalog/products");
       return res.data;
     },
   });
 
   const products = data || [];
 
+  // Compute product count per category
+  const countMap = useMemo(() => {
+    const map: Record<string, number> = {};
+    products.forEach((p) => {
+      map[p.category] = (map[p.category] || 0) + 1;
+    });
+    return map;
+  }, [products]);
+
+  const getCount = (label: string) => {
+    const apiCat = CATEGORY_API_MAP[label] ?? label;
+    return countMap[apiCat] ?? 0;
+  };
+
+  const filtered = CATEGORIES.filter((c) =>
+    c.label.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const thumbBg = (bg: string) => {
+    switch (bg) {
+      case "blue": return colors.blueBg ?? "#0d1b2b";
+      case "amber": return colors.amberBg ?? "#2b1f0a";
+      case "green": return colors.greenBg ?? "#0d2b1a";
+      default: return colors.bg4 ?? "#2e2e2e";
+    }
+  };
+
+  const handleCategoryPress = (label: string) => {
+    const apiCat = CATEGORY_API_MAP[label] ?? label;
+    router.push({ pathname: "/(tabs)/search", params: { category: apiCat } });
+  };
+
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { paddingTop: insets.top + 12, borderBottomColor: colors.border }]}>
+      {/* Header */}
+      <View
+        style={[
+          styles.header,
+          { paddingTop: insets.top + 12, borderBottomColor: colors.border },
+        ]}
+      >
         <Text style={[styles.title, { color: colors.foreground }]}>Browse</Text>
-        <Pressable onPress={() => router.push("/(tabs)/search")}>
-          <Ionicons name="search-outline" size={22} color={colors.text2} />
-        </Pressable>
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={[styles.catScroll, { borderBottomColor: colors.border }]}
+      {/* Search bar */}
+      <View
+        style={[
+          styles.searchBar,
+          { backgroundColor: colors.card, borderColor: colors.border },
+        ]}
       >
-        {CATEGORIES.map((c) => (
+        <Ionicons name="search-outline" size={15} color={colors.text3} />
+        <TextInput
+          style={[styles.searchInput, { color: colors.text3 }]}
+          placeholder="Search all categories"
+          placeholderTextColor={colors.text3}
+          value={search}
+          onChangeText={setSearch}
+        />
+      </View>
+
+      {/* Category list */}
+      <ScrollView
+        contentContainerStyle={[
+          styles.list,
+          { paddingBottom: insets.bottom + 90 },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        {filtered.map((c) => (
           <Pressable
             key={c.label}
-            style={[styles.catChip, { borderColor: activeCategory === c.label ? colors.primary : colors.border2 }]}
-            onPress={() => setActiveCategory(c.label)}
+            style={[
+              styles.row,
+              { borderBottomColor: colors.border },
+            ]}
+            onPress={() => handleCategoryPress(c.label)}
           >
-            <Ionicons
-              name={c.icon}
-              size={18}
-              color={activeCategory === c.label ? colors.primary : colors.text3}
-            />
-            <Text
-              style={[
-                styles.catLabel,
-                { color: activeCategory === c.label ? colors.primary : colors.text2 },
-              ]}
-            >
-              {c.label}
-            </Text>
+            {/* Thumbnail */}
+            <View style={[styles.thumb, { backgroundColor: thumbBg(c.bg) }]}>
+              <Text style={styles.thumbIcon}>{c.icon}</Text>
+            </View>
+
+            {/* Text */}
+            <View style={styles.rowMain}>
+              <Text style={[styles.rowTitle, { color: colors.foreground }]}>
+                {c.label}
+              </Text>
+              <Text style={[styles.rowSub, { color: colors.text3 }]}>
+                {getCount(c.label)} products
+              </Text>
+            </View>
+
+            {/* Chevron */}
+            <Text style={[styles.chevron, { color: colors.text3 }]}>›</Text>
           </Pressable>
         ))}
       </ScrollView>
-
-      {isLoading ? (
-        <View style={{ padding: 16 }}>
-          {Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} />)}
-        </View>
-      ) : products.length === 0 ? (
-        <EmptyState icon="phone-portrait-outline" title="No products" subtitle="Try another category" />
-      ) : (
-        <FlatList
-          data={products}
-          numColumns={2}
-          keyExtractor={(p) => p._id}
-          contentContainerStyle={{ padding: 10, paddingBottom: insets.bottom + 90, gap: 8 }}
-          columnWrapperStyle={{ gap: 8 }}
-          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />}
-          renderItem={({ item }) => (
-            <View style={{ flex: 1 }}>
-              <ProductCard product={item} isWishlisted={isWishlisted(item._id)} onToggleWishlist={toggle} />
-            </View>
-          )}
-        />
-      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
+
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingBottom: 12,
     borderBottomWidth: 1,
   },
-  title: { fontSize: 20, fontWeight: "700", fontFamily: "Inter_700Bold" },
-  catScroll: { paddingHorizontal: 12, gap: 8, paddingVertical: 10, borderBottomWidth: 1 },
-  catChip: {
+  title: {
+    fontSize: 20,
+    fontWeight: "700",
+    fontFamily: "Inter_700Bold",
+  },
+
+  searchBar: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 20,
+    gap: 8,
+    marginHorizontal: 14,
+    marginVertical: 10,
     borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
   },
-  catLabel: { fontSize: 12, fontFamily: "Inter_500Medium" },
+  searchInput: {
+    flex: 1,
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
+  },
+
+  list: {
+    paddingHorizontal: 14,
+  },
+
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+  },
+
+  thumb: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  thumbIcon: { fontSize: 20 },
+
+  rowMain: { flex: 1, minWidth: 0 },
+  rowTitle: {
+    fontSize: 13,
+    fontWeight: "600",
+    fontFamily: "Inter_600SemiBold",
+  },
+  rowSub: {
+    fontSize: 11,
+    marginTop: 2,
+    fontFamily: "Inter_400Regular",
+  },
+
+  chevron: { fontSize: 18, fontWeight: "400" },
 });
