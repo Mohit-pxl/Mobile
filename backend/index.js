@@ -410,6 +410,6 @@ app.use((req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Mock backend running on port ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Mock backend running on http://0.0.0.0:${PORT}`);
 });

@@ -102,7 +102,7 @@ export default function InvoiceScreen() {
       {/* ── Topbar ── */}
       <View style={[styles.topBar, { paddingTop: insets.top + 8, borderBottomColor: colors.border }]}>
         <View style={styles.topBarLeft}>
-          <Pressable onPress={() => router.back()} style={styles.iconBtn}>
+          <Pressable onPress={() => router.canGoBack() ? router.back() : router.replace('/')} style={styles.iconBtn}>
             <Ionicons name="arrow-back" size={24} color={colors.text3} />
           </Pressable>
           <Text style={[styles.topTitle, { color: colors.foreground }]}>Invoice #{inv.invoiceNumber}</Text>
@@ -153,7 +153,7 @@ export default function InvoiceScreen() {
 
           {/* ── Items List ── */}
           {inv.items.map((item, i) => {
-             // For mockup purposes, if product.gstPercent isn't there, fallback to 18
+            // For mockup purposes, if product.gstPercent isn't there, fallback to 18
             const gst = item.product?.gstPercent || 18;
             return (
               <View key={i} style={styles.listRow}>

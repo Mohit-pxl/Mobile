@@ -50,7 +50,7 @@ export default function ReportsScreen() {
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { paddingTop: insets.top + 12, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={8}>
+        <Pressable onPress={() => router.canGoBack() ? router.canGoBack() ? router.back() : router.replace('/') : router.replace('/')} hitSlop={8}>
           <Ionicons name="arrow-back" size={22} color={colors.text2} />
         </Pressable>
         <Text style={[styles.title, { color: colors.foreground }]}>Reports</Text>
@@ -144,3 +144,4 @@ const styles = StyleSheet.create({
   lowBadgeText: { fontSize: 11, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
   empty: { textAlign: "center", padding: 20, fontFamily: "Inter_400Regular" },
 });
+

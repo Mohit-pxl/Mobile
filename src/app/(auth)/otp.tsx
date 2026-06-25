@@ -56,7 +56,7 @@ export default function OtpScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background, paddingTop: insets.top + 24 }]}>
-      <Pressable onPress={() => router.back()} style={styles.back}>
+      <Pressable onPress={() => router.canGoBack() ? router.canGoBack() ? router.back() : router.replace('/') : router.replace('/')} style={styles.back}>
         <Text style={[styles.backText, { color: colors.text2 }]}>← Back</Text>
       </Pressable>
 
@@ -143,3 +143,4 @@ const styles = StyleSheet.create({
   btnText: { fontSize: 14, fontWeight: "700", fontFamily: "Inter_700Bold" },
   resend: { fontSize: 12, fontFamily: "Inter_400Regular", textDecorationLine: "underline" },
 });
+

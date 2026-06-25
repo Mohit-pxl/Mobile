@@ -157,7 +157,7 @@ export default function AddProductScreen() {
         await apiPost("/products", payload);
       }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.back();
+      router.canGoBack() ? router.canGoBack() ? router.back() : router.replace('/') : router.replace('/');
     } catch (e: unknown) {
       Alert.alert("Error", e instanceof Error ? e.message : "Failed to save product.");
     } finally {
@@ -193,7 +193,7 @@ export default function AddProductScreen() {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <View style={[styles.root, { backgroundColor: colors.background, paddingTop: insets.top }]}>
         <View style={[styles.topBar, { borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.back()} hitSlop={8}>
+          <Pressable onPress={() => router.canGoBack() ? router.canGoBack() ? router.back() : router.replace('/') : router.replace('/')} hitSlop={8}>
             <Ionicons name="arrow-back" size={22} color={colors.text2} />
           </Pressable>
           <Text style={[styles.topTitle, { color: colors.foreground }]}>{isEdit ? "Edit Product" : "Add Product"}</Text>
@@ -341,3 +341,4 @@ const styles = StyleSheet.create({
   removeImageBtn: { position: "absolute", top: 4, right: 4, backgroundColor: "rgba(0,0,0,0.6)", borderRadius: 12, width: 24, height: 24, alignItems: "center", justifyContent: "center" },
   addImageBtn: { width: 80, height: 80, borderRadius: 8, borderWidth: 1, borderStyle: "dashed", alignItems: "center", justifyContent: "center" },
 });
+

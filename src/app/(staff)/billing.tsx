@@ -11,6 +11,7 @@ import {
   Text,
   TextInput,
   View,
+  Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -438,7 +439,7 @@ export default function BillingScreen() {
             {
               backgroundColor: colors.bg2,
               borderTopColor: colors.border,
-              paddingBottom: insets.bottom + 12,
+              paddingBottom: Platform.OS === "ios" ? insets.bottom + 80 : insets.bottom + 12,
             },
           ]}
         >
