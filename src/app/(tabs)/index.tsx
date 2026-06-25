@@ -4,6 +4,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  Appearance,
   FlatList,
   Pressable,
   RefreshControl,
@@ -11,6 +12,7 @@ import {
   StyleSheet,
   Text,
   View,
+  useColorScheme,
   useWindowDimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -29,8 +31,13 @@ export default function CustomerHomeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const scheme = useColorScheme();
   const { toggle, isWishlisted } = useWishlist();
   const [activeCategory, setActiveCategory] = useState("All");
+
+  const toggleTheme = () => {
+    Appearance.setColorScheme(scheme === 'dark' ? 'light' : 'dark');
+  };
 
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
@@ -59,9 +66,14 @@ export default function CustomerHomeScreen() {
           <Ionicons name="flash" size={22} color={colors.primary} />
           <Text style={[styles.logoText, { color: colors.foreground }]}>Goldi Mobiles</Text>
         </View>
-        <Pressable onPress={() => router.push("/(tabs)/search")} hitSlop={8}>
-          <Ionicons name="search-outline" size={22} color={colors.text2} />
-        </Pressable>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <Pressable onPress={() => router.push("/(tabs)/search")} hitSlop={8}>
+            <Ionicons name="search-outline" size={22} color={colors.text2} />
+          </Pressable>
+          <Pressable onPress={toggleTheme} hitSlop={8}>
+            <Ionicons name={scheme === 'dark' ? "sunny-outline" : "moon-outline"} size={22} color={colors.text2} />
+          </Pressable>
+        </View>
       </View>
 
       <ScrollView
