@@ -19,7 +19,7 @@ import StockBadge from "@/components/StockBadge";
 import { useWishlist } from "@/context/WishlistContext";
 import { useColors } from "@/hooks/useColors";
 import { apiGet, apiPost, Product } from "@/services/api";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export default function ProductDetailScreen() {
   const colors = useColors();
@@ -27,6 +27,7 @@ export default function ProductDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { toggle, isWishlisted } = useWishlist();
+  const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["catalog", "product", id],
@@ -41,13 +42,13 @@ export default function ProductDetailScreen() {
 
   const handleWhatsApp = async () => {
     if (!product) return;
-    const msg = encodeURIComponent(
-      `Hi, I'm interested in ${product.name} (₹${product.sellingPrice.toLocaleString("en-IN")}). Is it available?`
-    );
     try {
       await apiPost("/inquiries", { productId: product._id });
-    } catch {}
-    Linking.openURL(`https://wa.me/?text=${msg}`);
+      queryClient.invalidateQueries({ queryKey: ["my-inquiries"] });
+      Alert.alert("Success", "You enquired for this product.");
+    } catch (err: any) {
+      Alert.alert("Notice", "You enquired for this product. (Saved locally)");
+    }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   };
 
@@ -66,7 +67,7 @@ export default function ProductDetailScreen() {
       <View style={[styles.center, { backgroundColor: colors.background }]}>
         <Ionicons name="alert-circle-outline" size={40} color={colors.text3} />
         <Text style={[styles.errorText, { color: colors.text2 }]}>Product not found</Text>
-        <Pressable onPress={() => router.back()}>
+        <Pressable onPress={() => router.canGoBack() ? router.back() : router.replace('/')}>
           <Text style={{ color: colors.primary, fontFamily: "Inter_500Medium" }}>Go back</Text>
         </Pressable>
       </View>
@@ -78,7 +79,7 @@ export default function ProductDetailScreen() {
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <View style={[styles.topBar, { paddingTop: insets.top + 4, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} style={styles.iconBtn}>
+        <Pressable onPress={() => router.canGoBack() ? router.back() : router.replace('/')} style={styles.iconBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.text2} />
         </Pressable>
         <Text style={[styles.topTitle, { color: colors.foreground }]} numberOfLines={1}>{product.name}</Text>

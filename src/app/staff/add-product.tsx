@@ -6,6 +6,7 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -31,13 +32,14 @@ export default function AddProductScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user } = useAuth();
-  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { id, scannedBarcode } = useLocalSearchParams<{ id?: string; scannedBarcode?: string }>();
 
   const isEdit = !!id;
   const isAdmin = user?.role === "admin";
   const canEditPrice = user?.permissions?.canEditPrice || isAdmin;
 
   const [saving, setSaving] = useState(false);
+  const [images, setImages] = useState<string[]>([]);
   const [form, setForm] = useState({
     name: "",
     brand: "",
@@ -75,11 +77,32 @@ export default function AddProductScreen() {
           description: p.description || "",
         });
         if (p.specifications) setSpecs(p.specifications.length ? p.specifications : [{ key: "", value: "" }]);
-      }).catch(() => {});
+        if (p.images) setImages(p.images);
+      }).catch(() => { });
     }
   }, [id, isEdit]);
 
+  useEffect(() => {
+    if (scannedBarcode) {
+      setForm((prev) => ({ ...prev, barcode: scannedBarcode }));
+      router.setParams({ scannedBarcode: undefined });
+    }
+  }, [scannedBarcode, router]);
+
   const set = (k: keyof typeof form, v: string) => setForm((prev) => ({ ...prev, [k]: v }));
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (!result.canceled) {
+      setImages((prev) => [...prev, result.assets[0].uri]);
+    }
+  };
+  const removeImage = (i: number) => setImages((prev) => prev.filter((_, idx) => idx !== i));
 
   const generateBarcode = () => {
     const code = `GM${Date.now().toString().slice(-8)}`;
@@ -105,6 +128,11 @@ export default function AddProductScreen() {
 
     setSaving(true);
     try {
+      let finalBarcode = form.barcode?.trim();
+      if (!finalBarcode) {
+        finalBarcode = `GM${Date.now().toString().slice(-8)}`;
+      }
+
       const payload = {
         name: form.name.trim(),
         brand: form.brand.trim(),
@@ -116,10 +144,11 @@ export default function AddProductScreen() {
         lowStockThreshold: Number(form.lowStockThreshold || 5),
         gstPercent: Number(form.gstPercent || 0),
         hsnCode: form.hsnCode || undefined,
-        barcode: form.barcode || undefined,
+        barcode: finalBarcode,
         internalCode: form.internalCode || undefined,
         description: form.description || undefined,
         specifications: specs.filter((s) => s.key && s.value),
+        images: images,
       };
 
       if (isEdit) {
@@ -128,7 +157,7 @@ export default function AddProductScreen() {
         await apiPost("/products", payload);
       }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.back();
+      router.canGoBack() ? router.canGoBack() ? router.back() : router.replace('/') : router.replace('/');
     } catch (e: unknown) {
       Alert.alert("Error", e instanceof Error ? e.message : "Failed to save product.");
     } finally {
@@ -164,7 +193,7 @@ export default function AddProductScreen() {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <View style={[styles.root, { backgroundColor: colors.background, paddingTop: insets.top }]}>
         <View style={[styles.topBar, { borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.back()} hitSlop={8}>
+          <Pressable onPress={() => router.canGoBack() ? router.canGoBack() ? router.back() : router.replace('/') : router.replace('/')} hitSlop={8}>
             <Ionicons name="arrow-back" size={22} color={colors.text2} />
           </Pressable>
           <Text style={[styles.topTitle, { color: colors.foreground }]}>{isEdit ? "Edit Product" : "Add Product"}</Text>
@@ -187,6 +216,22 @@ export default function AddProductScreen() {
               ))}
             </ScrollView>
           </View>
+
+          <Text style={[styles.section, { color: colors.primary }]}>Images</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.imageScroll}>
+            {images.map((uri, i) => (
+              <View key={i} style={styles.imageWrapper}>
+                <Image source={{ uri }} style={styles.imagePreview} />
+                <Pressable style={styles.removeImageBtn} onPress={() => removeImage(i)}>
+                  <Ionicons name="close" size={16} color="#fff" />
+                </Pressable>
+              </View>
+            ))}
+            <Pressable style={[styles.addImageBtn, { borderColor: colors.border2, backgroundColor: colors.bg3 }]} onPress={pickImage}>
+              <Ionicons name="image-outline" size={24} color={colors.text3} />
+              <Text style={{ color: colors.text3, fontSize: 12, marginTop: 4 }}>Add Image</Text>
+            </Pressable>
+          </ScrollView>
 
           <Text style={[styles.section, { color: colors.primary }]}>Pricing</Text>
           <Field label="Selling price" value={form.sellingPrice} onChange={(v) => set("sellingPrice", v)} keyboardType="decimal-pad" required />
@@ -224,6 +269,12 @@ export default function AddProductScreen() {
                 placeholder="Scan or enter barcode"
                 placeholderTextColor={colors.text3}
               />
+              <Pressable
+                style={[styles.autoBtn, { backgroundColor: colors.bg4, borderColor: colors.border2 }]}
+                onPress={() => router.push("/staff/barcode-scanner?returnMode=barcode")}
+              >
+                <Ionicons name="scan" size={16} color={colors.primary} />
+              </Pressable>
               <Pressable style={[styles.autoBtn, { backgroundColor: colors.bg4, borderColor: colors.border2 }]} onPress={generateBarcode}>
                 <Text style={{ color: colors.primary, fontSize: 11, fontFamily: "Inter_600SemiBold" }}>Auto</Text>
               </Pressable>
@@ -284,4 +335,10 @@ const styles = StyleSheet.create({
   specRow: { flexDirection: "row", gap: 8, alignItems: "center" },
   specInput: { width: 110, borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 9, fontSize: 12, fontFamily: "Inter_400Regular" },
   addSpecBtn: { flexDirection: "row", alignItems: "center", gap: 6, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, alignSelf: "flex-start", borderStyle: "dashed" },
+  imageScroll: { gap: 12 },
+  imageWrapper: { width: 80, height: 80, borderRadius: 8, overflow: "hidden" },
+  imagePreview: { width: "100%", height: "100%", resizeMode: "cover" },
+  removeImageBtn: { position: "absolute", top: 4, right: 4, backgroundColor: "rgba(0,0,0,0.6)", borderRadius: 12, width: 24, height: 24, alignItems: "center", justifyContent: "center" },
+  addImageBtn: { width: 80, height: 80, borderRadius: 8, borderWidth: 1, borderStyle: "dashed", alignItems: "center", justifyContent: "center" },
 });
+

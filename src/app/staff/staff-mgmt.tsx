@@ -62,7 +62,7 @@ export default function StaffMgmtScreen() {
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { paddingTop: insets.top + 12, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={8}>
+        <Pressable onPress={() => router.canGoBack() ? router.canGoBack() ? router.back() : router.replace('/') : router.replace('/')} hitSlop={8}>
           <Ionicons name="arrow-back" size={22} color={colors.text2} />
         </Pressable>
         <Text style={[styles.title, { color: colors.foreground }]}>Staff</Text>
@@ -179,3 +179,4 @@ const styles = StyleSheet.create({
   submitBtn: { borderRadius: 10, paddingVertical: 13, alignItems: "center", marginTop: 4 },
   submitText: { color: "#000", fontWeight: "700", fontFamily: "Inter_700Bold", fontSize: 14 },
 });
+

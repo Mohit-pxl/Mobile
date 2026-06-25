@@ -68,7 +68,7 @@ export default function StockMovementsScreen() {
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <View style={[styles.topBar, { paddingTop: insets.top + 4, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} style={styles.iconBtn}>
+        <Pressable onPress={() => router.canGoBack() ? router.back() : router.replace('/')} style={styles.iconBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.text2} />
         </Pressable>
         <Text style={[styles.topTitle, { color: colors.foreground }]}>Stock</Text>

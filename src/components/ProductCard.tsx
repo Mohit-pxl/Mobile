@@ -35,7 +35,7 @@ export default function ProductCard({ product, isWishlisted, onToggleWishlist }:
         <Pressable style={styles.heart} onPress={() => onToggleWishlist(product)} hitSlop={8}>
           <Ionicons
             name={isWishlisted ? "heart" : "heart-outline"}
-            size={16}
+            size={22}
             color={isWishlisted ? colors.destructive : colors.text3}
           />
         </Pressable>

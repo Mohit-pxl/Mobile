@@ -34,6 +34,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 12,
     flex: 1,
+    minWidth: "45%",
   },
   value: {
     fontSize: 15,

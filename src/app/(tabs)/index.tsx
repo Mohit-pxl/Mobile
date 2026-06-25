@@ -11,6 +11,7 @@ import {
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -30,6 +31,14 @@ export default function CustomerHomeScreen() {
   const router = useRouter();
   const { toggle, isWishlisted } = useWishlist();
   const [activeCategory, setActiveCategory] = useState("All");
+
+  const { width } = useWindowDimensions();
+  const isLargeScreen = width >= 768;
+  const numColumns = isLargeScreen ? 3 : 2;
+  const paddingHorizontal = 10;
+  const gap = 8;
+  const availableWidth = width - (paddingHorizontal * 2) - (gap * (numColumns - 1));
+  const itemWidth = availableWidth / numColumns;
 
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ["catalog", "products", activeCategory],
@@ -121,7 +130,7 @@ export default function CustomerHomeScreen() {
         ) : (
           <View style={styles.grid}>
             {featured.map((p) => (
-              <View key={p._id} style={styles.gridItem}>
+              <View key={p._id} style={{ width: itemWidth }}>
                 <ProductCard
                   product={p}
                   isWishlisted={isWishlisted(p._id)}
@@ -180,5 +189,4 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 16, fontWeight: "700", fontFamily: "Inter_700Bold" },
   seeAll: { fontSize: 12, fontFamily: "Inter_500Medium" },
   grid: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 10, gap: 8 },
-  gridItem: { width: "47%", marginHorizontal: "1.5%" },
 });
