@@ -64,7 +64,7 @@ export default function CustomerHomeScreen() {
       <View style={[styles.header, { paddingTop: insets.top + 12, backgroundColor: colors.bg2, borderBottomColor: colors.border }]}>
         <View style={styles.headerLeft}>
           <Ionicons name="flash" size={22} color={colors.primary} />
-          <Text style={[styles.logoText, { color: colors.foreground }]}>Goldi Mobiles</Text>
+          <Text style={[styles.logoText, { color: colors.foreground }]}>Goldy Mobiles</Text>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           <Pressable onPress={() => router.push("/(tabs)/search")} hitSlop={8}>

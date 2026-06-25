@@ -75,7 +75,7 @@ export default function LoginScreen() {
             <Ionicons name="flash" size={38} color={colors.primary} />
           </LinearGradient>
 
-          <Text style={[styles.appName, { color: colors.foreground }]}>Goldi Mobiles</Text>
+          <Text style={[styles.appName, { color: colors.foreground }]}>Goldy Mobiles</Text>
           <Text style={[styles.tagline, { color: colors.text3 }]}>Indore's premium mobile store</Text>
 
           <View style={styles.form}>

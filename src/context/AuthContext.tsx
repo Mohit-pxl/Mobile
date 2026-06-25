@@ -60,7 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const mockUser: User = {
       _id: `dev-${role}`,
       name: role === "admin" ? "Dev Admin" : role === "staff" ? "Dev Staff" : "Dev Customer",
-      email: `dev-${role}@goldimobiles.local`,
+      email: `dev-${role}@goldymobiles.local`,
       role,
       permissions: {
         canViewCostPrice: role !== "customer",
