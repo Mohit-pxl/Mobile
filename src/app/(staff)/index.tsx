@@ -79,8 +79,9 @@ export default function StaffDashboard() {
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>Dashboard</Text>
           <Text style={[styles.headerSub, { color: colors.text3 }]}>{today}</Text>
         </View>
-        <Pressable onPress={logout}>
-          <Ionicons name="log-out-outline" size={22} color={colors.text2} />
+        <Pressable onPress={() => router.push("/staff/notifications")} style={{ position: 'relative', padding: 4 }}>
+          <Ionicons name="notifications-outline" size={22} color={colors.text2} />
+          <View style={{ position: 'absolute', top: 2, right: 4, width: 8, height: 8, borderRadius: 4, backgroundColor: colors.destructive }} />
         </Pressable>
       </View>
 
