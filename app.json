@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "ElectroShop Mobile",
+    "name": "Goldi Mobiles",
     "slug": "mobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -32,7 +32,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow ElectroShop to access your camera to scan product barcodes."
+          "cameraPermission": "Allow Goldi Mobiles to access your camera to scan product barcodes."
         }
       ]
     ],

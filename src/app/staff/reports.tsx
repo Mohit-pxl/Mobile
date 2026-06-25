@@ -9,7 +9,7 @@ import { useColors } from "@/hooks/useColors";
 import { apiGet, Product, SalesReport } from "@/services/api";
 import { useQuery } from "@tanstack/react-query";
 
-const PERIODS = ["Monthly", "Daily"] as const;
+const PERIODS = ["Monthly", "Yearly", "Daily"] as const;
 type Period = (typeof PERIODS)[number];
 
 export default function ReportsScreen() {
@@ -17,19 +17,20 @@ export default function ReportsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [period, setPeriod] = useState<Period>("Monthly");
+  const [date, setDate] = useState(new Date());
 
   const salesQuery = useQuery({
-    queryKey: ["reports-sales", period],
+    queryKey: ["reports-sales", period, date.toISOString()],
     queryFn: async () => {
-      const res = await apiGet<SalesReport>(`/reports/sales?period=${period.toLowerCase()}`);
+      const res = await apiGet<SalesReport>(`/reports/sales?period=${period.toLowerCase()}&date=${date.toISOString()}`);
       return res.data;
     },
   });
 
   const topProductsQuery = useQuery({
-    queryKey: ["reports-top-products", period],
+    queryKey: ["reports-top-products", period, date.toISOString()],
     queryFn: async () => {
-      const res = await apiGet<(Product & { unitsSold: number; revenue: number })[]>(`/reports/top-products?period=${period.toLowerCase()}&limit=5`);
+      const res = await apiGet<(Product & { unitsSold: number; revenue: number })[]>(`/reports/top-products?period=${period.toLowerCase()}&date=${date.toISOString()}&limit=5`);
       return res.data || [];
     },
   });
@@ -46,6 +47,26 @@ export default function ReportsScreen() {
   const data = salesQuery.data;
   const topProducts = topProductsQuery.data || [];
   const lowStock = lowStockQuery.data || [];
+
+  let displayDate = "";
+  if (period === "Yearly") displayDate = `Year ${date.getFullYear()}`;
+  else if (period === "Monthly") displayDate = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+  else if (period === "Daily") displayDate = date.toLocaleString('default', { day: 'numeric', month: 'short', year: 'numeric' });
+
+  const handlePrev = () => {
+    const nd = new Date(date);
+    if (period === "Yearly") nd.setFullYear(nd.getFullYear() - 1);
+    else if (period === "Monthly") nd.setMonth(nd.getMonth() - 1);
+    else if (period === "Daily") nd.setDate(nd.getDate() - 1);
+    setDate(nd);
+  };
+  const handleNext = () => {
+    const nd = new Date(date);
+    if (period === "Yearly") nd.setFullYear(nd.getFullYear() + 1);
+    else if (period === "Monthly") nd.setMonth(nd.getMonth() + 1);
+    else if (period === "Daily") nd.setDate(nd.getDate() + 1);
+    setDate(nd);
+  };
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
@@ -69,12 +90,24 @@ export default function ReportsScreen() {
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: insets.bottom + 24 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 4 }}>
+           <Pressable onPress={handlePrev} style={{ padding: 6 }}>
+              <Ionicons name="chevron-back" size={20} color={colors.text2} />
+           </Pressable>
+           <Text style={{ fontSize: 14, fontFamily: "Inter_600SemiBold", color: colors.foreground }}>
+             {displayDate}
+           </Text>
+           <Pressable onPress={handleNext} style={{ padding: 6 }}>
+              <Ionicons name="chevron-forward" size={20} color={colors.text2} />
+           </Pressable>
+        </View>
+
         {salesQuery.isLoading ? (
           <ActivityIndicator color={colors.primary} style={{ marginVertical: 20 }} />
         ) : (
           <>
             <View style={[styles.card, { backgroundColor: colors.bg3, borderColor: colors.border, padding: 12 }]}>
-              <Text style={[styles.sectionLabel, { color: colors.foreground, marginBottom: 12 }]}>Sales — June 2026</Text>
+              <Text style={[styles.sectionLabel, { color: colors.foreground, marginBottom: 12 }]}>Sales — {displayDate}</Text>
               <View style={{ height: 60, flexDirection: 'row', alignItems: 'flex-end', gap: 4 }}>
                 <View style={{ flex: 1, backgroundColor: colors.primary, opacity: 0.7, borderTopLeftRadius: 3, borderTopRightRadius: 3, height: '35%' }} />
                 <View style={{ flex: 1, backgroundColor: colors.primary, opacity: 0.7, borderTopLeftRadius: 3, borderTopRightRadius: 3, height: '55%' }} />

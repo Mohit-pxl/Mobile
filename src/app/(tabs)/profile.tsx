@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AuthContext";
 import { useColors } from "@/hooks/useColors";
+import SignOutModal from "@/components/SignOutModal";
 
 export default function ProfileScreen() {
   const colors = useColors();
@@ -13,11 +14,10 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { user, logout } = useAuth();
 
+  const [showSignOut, setShowSignOut] = React.useState(false);
+
   const handleLogout = () => {
-    Alert.alert("Sign out", "Are you sure you want to sign out?", [
-      { text: "Cancel", style: "cancel" },
-      { text: "Sign out", style: "destructive", onPress: logout },
-    ]);
+    setShowSignOut(true);
   };
 
   const MenuItem = ({ icon, label, onPress, color }: { icon: keyof typeof Ionicons.glyphMap; label: string; onPress: () => void; color?: string }) => (
@@ -93,6 +93,8 @@ export default function ProfileScreen() {
           <MenuItem icon="log-out-outline" label="Sign out" onPress={handleLogout} color={colors.destructive} />
         </View>
       </ScrollView>
+
+      <SignOutModal visible={showSignOut} onClose={() => setShowSignOut(false)} />
     </View>
   );
 }
