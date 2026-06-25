@@ -15,6 +15,7 @@ import {
   Text,
   TextInput,
   View,
+  Modal,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -39,6 +40,7 @@ export default function AddProductScreen() {
   const canEditPrice = user?.permissions?.canEditPrice || isAdmin;
 
   const [saving, setSaving] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
   const [images, setImages] = useState<string[]>([]);
   const [form, setForm] = useState({
     name: "",
@@ -121,15 +123,7 @@ export default function AddProductScreen() {
   };
 
   const handleAddImage = () => {
-    Alert.alert(
-      "Add Image",
-      "Choose an option",
-      [
-        { text: "Camera", onPress: takePhoto },
-        { text: "Gallery", onPress: pickImage },
-        { text: "Cancel", style: "cancel" }
-      ]
-    );
+    setShowImageModal(true);
   };
 
   const removeImage = (i: number) => setImages((prev) => prev.filter((_, idx) => idx !== i));
@@ -340,6 +334,32 @@ export default function AddProductScreen() {
           />
         </ScrollView>
       </View>
+
+      <Modal visible={showImageModal} transparent animationType="fade" onRequestClose={() => setShowImageModal(false)}>
+        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.7)", justifyContent: "center", alignItems: "center" }}>
+          <View style={{ backgroundColor: colors.bg2, borderColor: colors.border, width: '85%', borderRadius: 16, padding: 20, borderWidth: 1 }}>
+            <Text style={{ fontSize: 18, fontWeight: '700', fontFamily: 'Inter_700Bold', color: colors.foreground, marginBottom: 16 }}>Add Image</Text>
+            
+            <Pressable style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.border }} onPress={() => { setShowImageModal(false); takePhoto(); }}>
+              <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.bg3, alignItems: 'center', justifyContent: 'center' }}>
+                <Ionicons name="camera" size={20} color={colors.primary} />
+              </View>
+              <Text style={{ fontSize: 15, fontFamily: 'Inter_500Medium', color: colors.foreground }}>Take Photo</Text>
+            </Pressable>
+            
+            <Pressable style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 }} onPress={() => { setShowImageModal(false); pickImage(); }}>
+              <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.bg3, alignItems: 'center', justifyContent: 'center' }}>
+                <Ionicons name="images" size={20} color={colors.primary} />
+              </View>
+              <Text style={{ fontSize: 15, fontFamily: 'Inter_500Medium', color: colors.foreground }}>Choose from Gallery</Text>
+            </Pressable>
+            
+            <Pressable style={{ marginTop: 16, paddingVertical: 12, borderRadius: 8, borderWidth: 1, borderColor: colors.border2, alignItems: 'center' }} onPress={() => setShowImageModal(false)}>
+              <Text style={{ fontSize: 13, fontFamily: 'Inter_600SemiBold', color: colors.text2 }}>Cancel</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }

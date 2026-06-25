@@ -9,14 +9,14 @@ import { useColors } from "@/hooks/useColors";
 import { apiGet, Product, SalesReport } from "@/services/api";
 import { useQuery } from "@tanstack/react-query";
 
-const PERIODS = ["Today", "Week", "Month", "Year"] as const;
+const PERIODS = ["Monthly", "Daily"] as const;
 type Period = (typeof PERIODS)[number];
 
 export default function ReportsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const [period, setPeriod] = useState<Period>("Month");
+  const [period, setPeriod] = useState<Period>("Monthly");
 
   const salesQuery = useQuery({
     queryKey: ["reports-sales", period],
@@ -72,12 +72,33 @@ export default function ReportsScreen() {
         {salesQuery.isLoading ? (
           <ActivityIndicator color={colors.primary} style={{ marginVertical: 20 }} />
         ) : (
-          <View style={styles.metricsGrid}>
-            <MetricCard value={fmt(data?.totalSales || 0)} label="Revenue" valueColor="accent" />
-            <MetricCard value={String(data?.totalOrders || 0)} label="Orders" />
-            <MetricCard value={fmt(data?.avgOrderValue || 0)} label="Avg order" />
-            <MetricCard value={(data?.topPaymentMode || "–").toUpperCase()} label="Top payment" />
-          </View>
+          <>
+            <View style={[styles.card, { backgroundColor: colors.bg3, borderColor: colors.border, padding: 12 }]}>
+              <Text style={[styles.sectionLabel, { color: colors.foreground, marginBottom: 12 }]}>Sales — June 2026</Text>
+              <View style={{ height: 60, flexDirection: 'row', alignItems: 'flex-end', gap: 4 }}>
+                <View style={{ flex: 1, backgroundColor: colors.primary, opacity: 0.7, borderTopLeftRadius: 3, borderTopRightRadius: 3, height: '35%' }} />
+                <View style={{ flex: 1, backgroundColor: colors.primary, opacity: 0.7, borderTopLeftRadius: 3, borderTopRightRadius: 3, height: '55%' }} />
+                <View style={{ flex: 1, backgroundColor: colors.primary, opacity: 0.7, borderTopLeftRadius: 3, borderTopRightRadius: 3, height: '40%' }} />
+                <View style={{ flex: 1, backgroundColor: colors.primary, opacity: 1, borderTopLeftRadius: 3, borderTopRightRadius: 3, height: '80%' }} />
+                <View style={{ flex: 1, backgroundColor: colors.primary, opacity: 0.7, borderTopLeftRadius: 3, borderTopRightRadius: 3, height: '50%' }} />
+                <View style={{ flex: 1, backgroundColor: colors.primary, opacity: 1, borderTopLeftRadius: 3, borderTopRightRadius: 3, height: '95%' }} />
+                <View style={{ flex: 1, backgroundColor: colors.primary, opacity: 0.7, borderTopLeftRadius: 3, borderTopRightRadius: 3, height: '30%' }} />
+              </View>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 }}>
+                <Text style={{ fontSize: 9, color: colors.text3, fontFamily: "Inter_500Medium" }}>Wk 1</Text>
+                <Text style={{ fontSize: 9, color: colors.text3, fontFamily: "Inter_500Medium" }}>Wk 2</Text>
+                <Text style={{ fontSize: 9, color: colors.text3, fontFamily: "Inter_500Medium" }}>Wk 3</Text>
+                <Text style={{ fontSize: 9, color: colors.text3, fontFamily: "Inter_500Medium" }}>Wk 4</Text>
+              </View>
+            </View>
+
+            <View style={styles.metricsGrid}>
+              <MetricCard value={fmt(data?.totalSales || 0)} label="Revenue" />
+              <MetricCard value={fmt(data?.grossProfit || 0)} label="Gross profit" valueColor="green" />
+              <MetricCard value={fmt(data?.expenses || 0)} label="Expenses" valueColor="red" />
+              <MetricCard value={fmt(data?.netProfit || 0)} label="Net profit" valueColor="green" />
+            </View>
+          </>
         )}
 
         <Text style={[styles.sectionLabel, { color: colors.text3 }]}>Top Products · {period}</Text>
@@ -89,11 +110,14 @@ export default function ReportsScreen() {
           ) : (
             topProducts.map((p, i) => (
               <View key={p._id} style={[styles.topRow, { borderBottomColor: colors.border }]}>
-                <Text style={[styles.rank, { color: colors.primary }]}>#{i + 1}</Text>
+                <Text style={[styles.rank, { color: colors.text3 }]}>{i + 1}</Text>
                 <View style={styles.topInfo}>
                   <Text style={[styles.topName, { color: colors.foreground }]} numberOfLines={1}>{p.name}</Text>
-                  <Text style={[styles.topSub, { color: colors.text3 }]}>{p.unitsSold || 0} units · {fmt(p.revenue || 0)}</Text>
+                  <Text style={[styles.topSub, { color: colors.text3 }]}>{p.unitsSold || 0} units sold</Text>
                 </View>
+                <Text style={{ fontSize: 13, fontWeight: "700", fontFamily: "Inter_700Bold", color: colors.primary }}>
+                  {fmt(p.revenue || 0)}
+                </Text>
               </View>
             ))
           )}
@@ -118,6 +142,11 @@ export default function ReportsScreen() {
             ))
           )}
         </View>
+
+        <Pressable style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: colors.bg3, paddingVertical: 12, borderRadius: 8, borderWidth: 1, borderColor: colors.border2, marginTop: 10 }}>
+          <Ionicons name="download-outline" size={16} color={colors.text2} />
+          <Text style={{ fontSize: 12, fontFamily: "Inter_600SemiBold", color: colors.text2 }}>Export CSV / PDF</Text>
+        </Pressable>
       </ScrollView>
     </View>
   );

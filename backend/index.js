@@ -374,27 +374,60 @@ app.get('/api/reports/sales', (req, res) => {
   res.json({
     success: true,
     data: {
-      totalSales: 150000,
+      totalSales: 384200,
       totalOrders: 25,
       avgOrderValue: 6000,
-      topPaymentMode: "UPI"
+      topPaymentMode: "UPI",
+      grossProfit: 89600,
+      expenses: 14800,
+      netProfit: 74800
     }
   });
 });
 
 app.get('/api/reports/top-products', (req, res) => {
-  res.json({ success: true, data: [] });
+  res.json({ 
+    success: true, 
+    data: [
+      { _id: "p1", name: "iPhone 15 128GB", unitsSold: 8, revenue: 125800 },
+      { _id: "p2", name: "Galaxy S24 256GB", unitsSold: 3, revenue: 74999 },
+      { _id: "p5", name: "Boat Airdopes 141", unitsSold: 22, revenue: 28578 }
+    ] 
+  });
 });
 
 // --- Expenses ---
 app.get('/api/expenses', (req, res) => {
-  res.json({ success: true, data: mockData.expenses });
+  let results = mockData.expenses;
+  const { month, year } = req.query;
+  if (month && year) {
+    results = results.filter(e => {
+      const d = new Date(e.createdAt);
+      return d.getMonth() + 1 === parseInt(month) && d.getFullYear() === parseInt(year);
+    });
+  }
+  res.json({ success: true, data: results });
 });
 
 app.post('/api/expenses', (req, res) => {
   const e = { _id: uuidv4(), createdAt: new Date().toISOString(), ...req.body };
   mockData.expenses.push(e);
   res.json({ success: true, data: e });
+});
+
+app.patch('/api/expenses/:id', (req, res) => {
+  const idx = mockData.expenses.findIndex(e => e._id === req.params.id);
+  if (idx !== -1) {
+    mockData.expenses[idx] = { ...mockData.expenses[idx], ...req.body, updatedAt: new Date().toISOString() };
+    res.json({ success: true, data: mockData.expenses[idx] });
+  } else {
+    res.status(404).json({ success: false, message: "Expense not found" });
+  }
+});
+
+app.delete('/api/expenses/:id', (req, res) => {
+  mockData.expenses = mockData.expenses.filter(e => e._id !== req.params.id);
+  res.json({ success: true });
 });
 
 // --- Inquiries ---
