@@ -58,6 +58,7 @@ export default function CustomerLedgerScreen() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["customer", id] });
       qc.invalidateQueries({ queryKey: ["customer-invoices", id] });
+      qc.invalidateQueries({ queryKey: ["customers"] });
       setShowPayModal(false);
       setPayAmount("");
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -159,14 +160,22 @@ export default function CustomerLedgerScreen() {
                 <Ionicons name="close" size={22} color={colors.text2} />
               </Pressable>
             </View>
-            <TextInput
-              style={[styles.formInput, { color: colors.foreground, backgroundColor: colors.bg3, borderColor: colors.border }]}
-              placeholder="Amount (₹)"
-              placeholderTextColor={colors.text3}
-              keyboardType="numeric"
-              value={payAmount}
-              onChangeText={setPayAmount}
-            />
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <TextInput
+                style={[styles.formInput, { flex: 1, color: colors.foreground, backgroundColor: colors.bg3, borderColor: colors.border }]}
+                placeholder="Amount (₹)"
+                placeholderTextColor={colors.text3}
+                keyboardType="numeric"
+                value={payAmount}
+                onChangeText={setPayAmount}
+              />
+              <Pressable
+                style={{ backgroundColor: colors.bg4, borderColor: colors.border2, paddingHorizontal: 12, paddingVertical: 12, borderRadius: 9, borderWidth: 1 }}
+                onPress={() => setPayAmount(String(customer?.totalDue || 0))}
+              >
+                <Text style={{ color: colors.primary, fontSize: 11, fontFamily: "Inter_600SemiBold" }}>Complete Due</Text>
+              </Pressable>
+            </View>
             <Text style={[styles.fieldLabel, { color: colors.text3 }]}>Payment Mode</Text>
             <View style={styles.modeRow}>
               {(["cash", "upi", "card"] as const).map((mode) => (

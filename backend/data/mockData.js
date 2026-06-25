@@ -391,6 +391,48 @@ const customers = [
     phone: "9876543210",
     email: "john@example.com",
     totalDue: 1500
+  },
+  {
+    _id: "c2",
+    name: "Jane Smith",
+    phone: "9988776655",
+    email: "jane@example.com",
+    totalDue: 0
+  },
+  {
+    _id: "c3",
+    name: "Rahul Kumar",
+    phone: "9876123450",
+    email: "rahul@example.com",
+    totalDue: 500
+  },
+  {
+    _id: "c4",
+    name: "Priya Sharma",
+    phone: "9123456789",
+    email: "priya@example.com",
+    totalDue: 0
+  },
+  {
+    _id: "c5",
+    name: "Amit Patel",
+    phone: "9988223344",
+    email: "amit@example.com",
+    totalDue: 2300
+  },
+  {
+    _id: "c6",
+    name: "Sneha Reddy",
+    phone: "9112233445",
+    email: "sneha@example.com",
+    totalDue: 0
+  },
+  {
+    _id: "c7",
+    name: "Vikram Singh",
+    phone: "9887766554",
+    email: "vikram@example.com",
+    totalDue: 0
   }
 ];
 

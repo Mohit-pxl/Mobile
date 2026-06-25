@@ -145,6 +145,16 @@ app.post('/api/customers', (req, res) => {
   res.json({ success: true, data: newCustomer });
 });
 
+app.delete('/api/customers/:id', (req, res) => {
+  const index = mockData.customers.findIndex(c => c._id === req.params.id);
+  if (index !== -1) {
+    mockData.customers.splice(index, 1);
+    res.json({ success: true, message: "Customer deleted" });
+  } else {
+    res.status(404).json({ success: false, message: "Customer not found" });
+  }
+});
+
 app.post('/api/customers/:id/payments', (req, res) => {
   const customer = mockData.customers.find(c => c._id === req.params.id);
   if (!customer) return res.status(404).json({ success: false, message: "Customer not found" });

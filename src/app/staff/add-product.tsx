@@ -102,6 +102,36 @@ export default function AddProductScreen() {
       setImages((prev) => [...prev, result.assets[0].uri]);
     }
   };
+
+  const takePhoto = async () => {
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+    if (permissionResult.granted === false) {
+      Alert.alert("Permission Required", "You need to grant camera permissions to use this feature.");
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (!result.canceled) {
+      setImages((prev) => [...prev, result.assets[0].uri]);
+    }
+  };
+
+  const handleAddImage = () => {
+    Alert.alert(
+      "Add Image",
+      "Choose an option",
+      [
+        { text: "Camera", onPress: takePhoto },
+        { text: "Gallery", onPress: pickImage },
+        { text: "Cancel", style: "cancel" }
+      ]
+    );
+  };
+
   const removeImage = (i: number) => setImages((prev) => prev.filter((_, idx) => idx !== i));
 
   const generateBarcode = () => {
@@ -227,7 +257,7 @@ export default function AddProductScreen() {
                 </Pressable>
               </View>
             ))}
-            <Pressable style={[styles.addImageBtn, { borderColor: colors.border2, backgroundColor: colors.bg3 }]} onPress={pickImage}>
+            <Pressable style={[styles.addImageBtn, { borderColor: colors.border2, backgroundColor: colors.bg3 }]} onPress={handleAddImage}>
               <Ionicons name="image-outline" size={24} color={colors.text3} />
               <Text style={{ color: colors.text3, fontSize: 12, marginTop: 4 }}>Add Image</Text>
             </Pressable>
