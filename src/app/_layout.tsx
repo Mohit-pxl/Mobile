@@ -61,17 +61,18 @@ function RootLayoutNav() {
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="(staff)" options={{ headerShown: false }} />
-        <Stack.Screen name="product/[id]" options={{ title: "Product" }} />
-        <Stack.Screen name="staff/add-product" options={{ title: "Add Product" }} />
-        <Stack.Screen name="staff/invoice/[id]" options={{ title: "Invoice" }} />
-        <Stack.Screen name="staff/stock/[productId]" options={{ title: "Stock Movements" }} />
-        <Stack.Screen name="staff/khata" options={{ title: "Khata / Ledger" }} />
-        <Stack.Screen name="staff/customer/[id]" options={{ title: "Customer Ledger" }} />
-        <Stack.Screen name="staff/quotations" options={{ title: "Quotations" }} />
-        <Stack.Screen name="staff/quotation/[id]" options={{ title: "Quotation" }} />
-        <Stack.Screen name="staff/expenses" options={{ title: "Expenses" }} />
-        <Stack.Screen name="staff/reports" options={{ title: "Reports" }} />
-        <Stack.Screen name="staff/staff-mgmt" options={{ title: "Staff Management" }} />
+        <Stack.Screen name="product/[id]" options={{ title: "Product", headerShown: false }} />
+        <Stack.Screen name="category-products" options={{ headerShown: false }} />
+        <Stack.Screen name="staff/add-product" options={{ title: "Add Product", headerShown: false }} />
+        <Stack.Screen name="staff/invoice/[id]" options={{ title: "Invoice", headerShown: false }} />
+        <Stack.Screen name="staff/stock/[productId]" options={{ title: "Stock Movements", headerShown: false }} />
+        <Stack.Screen name="staff/khata" options={{ title: "Khata / Ledger", headerShown: false }} />
+        <Stack.Screen name="staff/customer/[id]" options={{ title: "Customer Ledger", headerShown: false }} />
+        <Stack.Screen name="staff/quotations" options={{ title: "Quotations", headerShown: false }} />
+        <Stack.Screen name="staff/quotation/[id]" options={{ title: "Quotation", headerShown: false }} />
+        <Stack.Screen name="staff/expenses" options={{ title: "Expenses", headerShown: false }} />
+        <Stack.Screen name="staff/reports" options={{ title: "Reports", headerShown: false }} />
+        <Stack.Screen name="staff/staff-mgmt" options={{ title: "Staff Management", headerShown: false }} />
         <Stack.Screen
           name="staff/barcode-scanner"
           options={{

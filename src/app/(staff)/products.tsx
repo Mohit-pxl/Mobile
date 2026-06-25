@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
@@ -12,7 +13,7 @@ import { useColors } from "@/hooks/useColors";
 import { apiGet, Product } from "@/services/api";
 import { useQuery } from "@tanstack/react-query";
 
-const FILTERS = ["All", "Mobiles", "Audio", "Accessories", "⚠ Low stock"];
+const FILTERS = ["All", "Mobiles", "Audio", "Smart Watches", "⚠ Low stock"];
 
 export default function StaffProductsScreen() {
   const colors = useColors();
@@ -41,69 +42,82 @@ export default function StaffProductsScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { paddingTop: insets.top + 12, borderBottomColor: colors.border }]}>
-        <Text style={[styles.title, { color: colors.foreground }]}>Products</Text>
-        <Pressable
-          style={[styles.fab, { backgroundColor: colors.primary }]}
-          onPress={() => router.push("/staff/add-product")}
-        >
-          <Ionicons name="add" size={16} color="#000" />
-          <Text style={styles.fabText}>Add</Text>
-        </Pressable>
-      </View>
-
-      <View style={[styles.searchRow, { borderBottomColor: colors.border }]}>
-        <View style={[styles.searchBox, { backgroundColor: colors.bg3, borderColor: colors.border }]}>
-          <Ionicons name="search-outline" size={16} color={colors.text3} />
-          <TextInput
-            style={[styles.searchInput, { color: colors.foreground }]}
-            placeholder="Search by name, SKU, barcode"
-            placeholderTextColor={colors.text3}
-            value={search}
-            onChangeText={setSearch}
-          />
-          {search.length > 0 && (
-            <Pressable onPress={() => setSearch("")} hitSlop={8}>
-              <Ionicons name="close-circle" size={16} color={colors.text3} />
-            </Pressable>
-          )}
-        </View>
-      </View>
-
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 14, gap: 8, paddingVertical: 10 }}
-        style={[styles.filterScroll, { borderBottomColor: colors.border }]}
-      >
-        {FILTERS.map((f) => (
+      <View style={[styles.headerContainer, { paddingTop: insets.top + 8, backgroundColor: colors.background }]}>
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: colors.foreground }]}>Products</Text>
           <Pressable
-            key={f}
-            style={[
-              styles.chip,
-              {
-                backgroundColor: activeFilter === f ? colors.primary : colors.bg3,
-                borderColor: activeFilter === f ? colors.primary : colors.border2,
-              },
+            style={({ pressed }) => [
+              styles.fab,
+              { backgroundColor: colors.primary, opacity: pressed ? 0.8 : 1 }
             ]}
-            onPress={() => setActiveFilter(f)}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push("/staff/add-product");
+            }}
           >
-            <Text style={[styles.chipText, { color: activeFilter === f ? "#000" : colors.text2 }]}>{f}</Text>
+            <Ionicons name="add" size={16} color="#000" />
+            <Text style={styles.fabText}>Add</Text>
           </Pressable>
-        ))}
-      </ScrollView>
+        </View>
+
+        <View style={styles.searchRow}>
+          <View style={[styles.searchBox, { backgroundColor: colors.bg4 }]}>
+            <Ionicons name="search" size={18} color={colors.text3} />
+            <TextInput
+              style={[styles.searchInput, { color: colors.foreground }]}
+              placeholder="Search by name, SKU, barcode"
+              placeholderTextColor={colors.text3}
+              value={search}
+              onChangeText={setSearch}
+            />
+            {search.length > 0 && (
+              <Pressable onPress={() => { setSearch(""); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }} hitSlop={8}>
+                <Ionicons name="close-circle" size={18} color={colors.text3} />
+              </Pressable>
+            )}
+          </View>
+        </View>
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterScrollContent}
+          style={[styles.filterScroll, { borderBottomColor: colors.border }]}
+        >
+          {FILTERS.map((f) => (
+            <Pressable
+              key={f}
+              style={[
+                styles.chip,
+                {
+                  backgroundColor: activeFilter === f ? colors.primary : colors.bg3,
+                  borderColor: activeFilter === f ? colors.primary : colors.border2,
+                },
+              ]}
+              onPress={() => {
+                if (activeFilter !== f) Haptics.selectionAsync();
+                setActiveFilter(f);
+              }}
+            >
+              <Text style={[styles.chipText, { color: activeFilter === f ? "#000" : colors.text2 }]}>{f}</Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      </View>
 
       {isLoading ? (
         <View style={{ padding: 16 }}>
           {Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} />)}
         </View>
       ) : products.length === 0 ? (
-        <EmptyState icon="cube-outline" title="No products" subtitle="Tap + Add to add your first product" />
+        <View style={styles.emptyContainer}>
+          <EmptyState icon="cube-outline" title="No products" subtitle={search ? "No products match your search" : "Tap + Add to add your first product"} />
+        </View>
       ) : (
         <FlatList
           data={products}
           keyExtractor={(p) => p._id}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 90 }}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 90, paddingTop: 8 }}
           refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />}
           renderItem={({ item }) => (
             <ProductListRow
@@ -120,28 +134,42 @@ export default function StaffProductsScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
+  headerContainer: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+    zIndex: 10,
+  },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
+    paddingHorizontal: 20,
+    paddingBottom: 8,
   },
-  title: { fontSize: 20, fontWeight: "700", fontFamily: "Inter_700Bold" },
+  title: { fontSize: 24, fontWeight: "800", fontFamily: "Inter_700Bold", letterSpacing: -0.5 },
   fab: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
   },
   fabText: { color: "#000", fontWeight: "700", fontFamily: "Inter_700Bold", fontSize: 13 },
-  searchRow: { padding: 12, borderBottomWidth: 1 },
-  searchBox: { flexDirection: "row", alignItems: "center", gap: 8, borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10 },
-  searchInput: { flex: 1, fontSize: 13, fontFamily: "Inter_400Regular" },
-  filterScroll: { borderBottomWidth: 1, maxHeight: 56 },
-  chip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, borderWidth: 1 },
-  chipText: { fontSize: 12, fontFamily: "Inter_500Medium" },
+  searchRow: { paddingHorizontal: 16, paddingVertical: 10 },
+  searchBox: { flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12 },
+  searchInput: { flex: 1, fontSize: 14, fontFamily: "Inter_500Medium" },
+  filterScroll: { borderBottomWidth: 1 },
+  filterScrollContent: { paddingHorizontal: 16, gap: 8, paddingBottom: 12, paddingTop: 4 },
+  chip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 24, borderWidth: 1 },
+  chipText: { fontSize: 12, fontFamily: "Inter_600SemiBold", letterSpacing: 0.2 },
+  emptyContainer: { flex: 1, justifyContent: "center", alignItems: "center", paddingBottom: 100 },
 });

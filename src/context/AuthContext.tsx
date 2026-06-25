@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 import { apiPost, User } from "@/services/api";
@@ -78,6 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await AsyncStorage.multiRemove(["auth_token", "auth_user"]);
     setUser(null);
     setIsGuest(false);
+    router.replace("/(auth)/login");
   }, []);
 
   const refreshUser = useCallback(async () => {

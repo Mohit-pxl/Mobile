@@ -1,9 +1,25 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Constants from "expo-constants";
 
 const getApiUrl = () => {
+  // 1. Explicit env var takes priority
   if (process.env.EXPO_PUBLIC_API_URL) return process.env.EXPO_PUBLIC_API_URL;
   if (process.env.EXPO_PUBLIC_DOMAIN)
     return `https://${process.env.EXPO_PUBLIC_DOMAIN}/api`;
+
+  // 2. Auto-detect dev machine IP from Expo's debugger host
+  //    hostUri is like "192.168.x.x:8081" — we extract just the IP
+  const debuggerHost =
+    Constants.expoConfig?.hostUri ??
+    Constants.manifest?.debuggerHost ??
+    Constants.manifest2?.extra?.expoGo?.debuggerHost;
+
+  if (debuggerHost) {
+    const host = debuggerHost.split(":")[0]; // extract IP, drop port
+    return `http://${host}:5000/api`;
+  }
+
+  // 3. Fallback (web or emulator)
   return "http://localhost:5000/api";
 };
 

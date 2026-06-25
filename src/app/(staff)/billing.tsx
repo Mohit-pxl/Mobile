@@ -11,13 +11,15 @@ import {
   Text,
   TextInput,
   View,
+  Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import CustomerPicker from "@/components/CustomerPicker";
 import { useCart } from "@/context/CartContext";
 import { useColors } from "@/hooks/useColors";
-import { apiGet, apiPost, Customer, Product } from "@/services/api";
+import { apiGet, apiPost, Customer, Invoice, Product } from "@/services/api";
+import { useQuery } from "@tanstack/react-query";
 
 const PAYMENT_MODES = ["cash", "upi", "card", "credit"] as const;
 type PaymentMode = (typeof PAYMENT_MODES)[number];
@@ -33,16 +35,25 @@ export default function BillingScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const params = useLocalSearchParams<{ scannedProductId?: string }>();
+  const params = useLocalSearchParams<{ scannedProductId?: string; mode?: string }>();
+  const isQuotationMode = params.mode === "quotation";
   const { items, addItem, updateQty, clearCart, subtotal, gstAmount, total } = useCart();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [searching, setSearching] = useState(false);
   const [paymentMode, setPaymentMode] = useState<PaymentMode>("cash");
-  const [placing, setPlacing] = useState(false);
+  const [placing, setPlacing] = useState<null | "paid" | "unpaid">(null);
   const [barcodeText, setBarcodeText] = useState("");
   const [customer, setCustomer] = useState<Customer | null>(null);
+
+  const { data: recentInvoices = [] } = useQuery<Invoice[]>({
+    queryKey: ["invoices"],
+    queryFn: async () => {
+      const res = await apiGet<Invoice[]>("/billing/invoices");
+      return (res.data || []).slice(-5).reverse();
+    },
+  });
 
   const prevScannedId = useRef<string | undefined>(undefined);
 
@@ -88,30 +99,57 @@ export default function BillingScreen() {
   };
 
   /* ── Place order ── */
-  const handlePlaceOrder = async () => {
+  const handlePlaceOrder = async (paymentStatus: "paid" | "unpaid" = "paid") => {
     if (items.length === 0) {
       Alert.alert("Empty cart", "Add at least one product.");
       return;
     }
-    if (paymentMode === "credit" && !customer) {
-      Alert.alert("Customer required", "Credit sales must be linked to a customer. Please select or create one.");
+    // Credit mode needs a customer
+    if (!isQuotationMode && paymentMode === "credit" && !customer && paymentStatus === "paid") {
+      Alert.alert("Customer required", "Credit sales must be linked to a customer.");
       return;
     }
-    setPlacing(true);
+    // Unpaid always needs a customer
+    if (paymentStatus === "unpaid" && !customer) {
+      Alert.alert("Customer required", "Unpaid invoices must be linked to a customer account.");
+      return;
+    }
+    setPlacing(paymentStatus);
     try {
-      const res = await apiPost<{ _id: string }>("/billing/invoices", {
-        items: items.map((i) => ({ productId: i.product._id, qty: i.qty, price: i.product.sellingPrice })),
-        paymentMode,
-        ...(customer ? { customerId: customer._id } : {}),
-      });
-      clearCart();
-      setCustomer(null);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.push(`/staff/invoice/${res.data._id}`);
+      if (isQuotationMode) {
+        const res = await apiPost<{ _id: string }>("/quotations", {
+          items: items.map((i) => ({
+            product: i.product,
+            qty: i.qty,
+            price: i.product.sellingPrice,
+            gstPercent: i.product.gstPercent,
+            subtotal: i.product.sellingPrice * i.qty,
+            gstAmount: (i.product.sellingPrice * i.qty) * (i.product.gstPercent / 100),
+          })),
+          customerId: customer?._id || undefined,
+          total,
+          status: "draft",
+        });
+        clearCart();
+        setCustomer(null);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        router.replace(`/staff/quotation/${res.data._id}`);
+      } else {
+        const res = await apiPost<{ _id: string }>("/billing/invoices", {
+          items: items.map((i) => ({ productId: i.product._id, qty: i.qty, price: i.product.sellingPrice })),
+          paymentMode: paymentStatus === "unpaid" ? "credit" : paymentMode,
+          paymentStatus,
+          ...(customer ? { customerId: customer._id } : {}),
+        });
+        clearCart();
+        setCustomer(null);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        router.replace(`/staff/invoice/${res.data._id}`);
+      }
     } catch (e: unknown) {
       Alert.alert("Error", e instanceof Error ? e.message : "Failed to place order.");
     } finally {
-      setPlacing(false);
+      setPlacing(null);
     }
   };
 
@@ -122,9 +160,11 @@ export default function BillingScreen() {
       {/* ── Header ── */}
       <View style={[styles.header, { paddingTop: insets.top + 12, borderBottomColor: colors.border }]}>
         <View>
-          <Text style={[styles.title, { color: colors.foreground }]}>New Sale</Text>
+          <Text style={[styles.title, { color: colors.foreground }]}>
+            {isQuotationMode ? "New Quotation" : "New Sale"}
+          </Text>
           <Text style={[styles.invNum, { color: colors.text3 }]}>
-            INV-{Date.now().toString().slice(-4)}
+            {isQuotationMode ? `QT-${Date.now().toString().slice(-4)}` : `INV-${Date.now().toString().slice(-4)}`}
           </Text>
         </View>
         {items.length > 0 && (
@@ -140,37 +180,53 @@ export default function BillingScreen() {
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ padding: 14, gap: 12, paddingBottom: insets.bottom + 200 }}
       >
-        {/* ── Scan + barcode row ── */}
-        <View style={styles.scanRow}>
-          <Pressable
-            style={[styles.cameraBtn, { backgroundColor: colors.primary }]}
-            onPress={() => router.push("/staff/barcode-scanner")}
-          >
-            <Ionicons name="camera" size={20} color="#000" />
-            <Text style={styles.cameraBtnText}>Scan</Text>
-          </Pressable>
-          <View style={[styles.barcodeBox, { flex: 1, backgroundColor: colors.bg2, borderColor: colors.border2 }]}>
-            <Ionicons name="barcode-outline" size={18} color={colors.text3} />
-            <TextInput
-              style={[styles.barcodeInput, { color: colors.foreground }]}
-              placeholder="Type barcode"
-              placeholderTextColor={colors.text3}
-              value={barcodeText}
-              onChangeText={setBarcodeText}
-              onSubmitEditing={handleBarcodeSearch}
-              returnKeyType="search"
-            />
-            {barcodeText.length > 0 && (
-              <Pressable onPress={handleBarcodeSearch} hitSlop={8}>
-                <Ionicons name="search" size={16} color={colors.primary} />
-              </Pressable>
-            )}
+        {/* ── Scan Barcode Banner ── */}
+        <Pressable
+          style={({ pressed }) => [
+            styles.scanBanner,
+            {
+              backgroundColor: colors.bg2,
+              borderColor: colors.primary,
+              opacity: pressed ? 0.7 : 1,
+            },
+          ]}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            router.push("/staff/barcode-scanner");
+          }}
+        >
+          <View style={[styles.scanIconWrap, { backgroundColor: `${colors.primary}20` }]}>
+            <Ionicons name="barcode-outline" size={24} color={colors.primary} />
           </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.scanBannerTitle, { color: colors.primary }]}>Scan barcode</Text>
+            <Text style={[styles.scanBannerSub, { color: colors.text3 }]}>Point camera at product barcode</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={16} color={colors.primary} />
+        </Pressable>
+
+        {/* ── Manual barcode (optional, kept for utility but styled cleanly) ── */}
+        <View style={[styles.barcodeBox, { backgroundColor: colors.bg4 }]}>
+          <Ionicons name="keypad" size={16} color={colors.text3} />
+          <TextInput
+            style={[styles.barcodeInput, { color: colors.foreground }]}
+            placeholder="Or type barcode manually..."
+            placeholderTextColor={colors.text3}
+            value={barcodeText}
+            onChangeText={setBarcodeText}
+            onSubmitEditing={handleBarcodeSearch}
+            returnKeyType="search"
+          />
+          {barcodeText.length > 0 && (
+            <Pressable onPress={() => { handleBarcodeSearch(); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }} hitSlop={8} style={styles.searchActionBtn}>
+              <Text style={{ color: colors.primary, fontWeight: "600", fontSize: 12 }}>Enter</Text>
+            </Pressable>
+          )}
         </View>
 
         {/* ── Product search ── */}
-        <View style={[styles.searchBox, { backgroundColor: colors.bg3, borderColor: colors.border }]}>
-          <Ionicons name="search-outline" size={16} color={colors.text3} />
+        <View style={[styles.searchBox, { backgroundColor: colors.bg4 }]}>
+          <Ionicons name="search" size={18} color={colors.text3} />
           <TextInput
             style={[styles.searchInput, { color: colors.foreground }]}
             placeholder="Search by product name"
@@ -179,6 +235,11 @@ export default function BillingScreen() {
             onChangeText={handleSearch}
           />
           {searching && <ActivityIndicator size="small" color={colors.primary} />}
+          {searchQuery.length > 0 && !searching && (
+            <Pressable onPress={() => setSearchQuery("")} hitSlop={8}>
+              <Ionicons name="close-circle" size={18} color={colors.text3} />
+            </Pressable>
+          )}
         </View>
 
         {searchResults.length > 0 && (
@@ -235,14 +296,18 @@ export default function BillingScreen() {
                   },
                 ]}
               >
-                <View style={styles.cartInfo}>
-                  <Text style={[styles.cartName, { color: colors.foreground }]} numberOfLines={1}>
-                    {item.product.name}
-                  </Text>
-                  <Text style={[styles.cartSub, { color: colors.text3 }]}>
-                    {fmt(item.product.sellingPrice)} each
-                  </Text>
-                </View>
+                  <View style={[styles.cartThumb, { backgroundColor: colors.bg4 }]}>
+                    <Ionicons name="cube-outline" size={16} color={colors.text2} />
+                  </View>
+                  <View style={styles.cartInfo}>
+                    <Text style={[styles.cartName, { color: colors.foreground }]} numberOfLines={1}>
+                      {item.product.name}
+                    </Text>
+                    <Text style={[styles.cartSub, { color: colors.text3 }]}>
+                      {fmt(item.product.sellingPrice)} × {item.qty}
+                      {item.qty > 1 ? ` = ${fmt(item.product.sellingPrice * item.qty)}` : ""}
+                    </Text>
+                  </View>
                 <View style={styles.qtyRow}>
                   <Pressable
                     style={[styles.qtyBtn, { borderColor: colors.border2 }]}
@@ -257,9 +322,6 @@ export default function BillingScreen() {
                   >
                     <Ionicons name="add" size={14} color={colors.text2} />
                   </Pressable>
-                  <Text style={[styles.lineTotal, { color: colors.foreground }]}>
-                    {fmt(item.product.sellingPrice * item.qty)}
-                  </Text>
                 </View>
               </View>
             ))}
@@ -274,8 +336,12 @@ export default function BillingScreen() {
               <Text style={[styles.totalValue, { color: colors.foreground }]}>{fmt(subtotal)}</Text>
             </View>
             <View style={styles.totalRow}>
-              <Text style={[styles.totalLabel, { color: colors.text3 }]}>GST</Text>
-              <Text style={[styles.totalValue, { color: colors.foreground }]}>{fmt(gstAmount)}</Text>
+              <Text style={[styles.totalLabel, { color: colors.text3 }]}>CGST</Text>
+              <Text style={[styles.totalValue, { color: colors.foreground }]}>{fmt(gstAmount / 2)}</Text>
+            </View>
+            <View style={styles.totalRow}>
+              <Text style={[styles.totalLabel, { color: colors.text3 }]}>SGST</Text>
+              <Text style={[styles.totalValue, { color: colors.foreground }]}>{fmt(gstAmount / 2)}</Text>
             </View>
             <View style={[styles.divider, { backgroundColor: colors.border }]} />
             <View style={styles.totalRow}>
@@ -286,36 +352,40 @@ export default function BillingScreen() {
         )}
 
         {/* ── Payment mode ── */}
-        <Text style={[styles.sectionLabel, { color: colors.text3 }]}>Payment mode</Text>
-        <View style={styles.paymentGrid}>
-          {PAYMENT_MODES.map((mode) => {
-            const active = paymentMode === mode;
-            return (
-              <Pressable
-                key={mode}
-                style={[
-                  styles.payBtn,
-                  {
-                    backgroundColor: active ? colors.primary : colors.bg3,
-                    borderColor: active ? colors.primary : colors.border2,
-                  },
-                ]}
-                onPress={() => setPaymentMode(mode)}
-              >
-                <Text style={styles.payBtnEmoji}>{MODE_ICONS[mode]}</Text>
-                <Text style={[styles.payBtnLabel, { color: active ? "#000" : colors.text2 }]}>
-                  {mode.toUpperCase()}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
+        {!isQuotationMode && (
+          <>
+            <Text style={[styles.sectionLabel, { color: colors.text3 }]}>Payment mode</Text>
+            <View style={styles.paymentGrid}>
+              {PAYMENT_MODES.map((mode) => {
+                const active = paymentMode === mode;
+                return (
+                  <Pressable
+                    key={mode}
+                    style={[
+                      styles.payBtn,
+                      {
+                        backgroundColor: active ? colors.primary : colors.bg3,
+                        borderColor: active ? colors.primary : colors.border2,
+                      },
+                    ]}
+                    onPress={() => setPaymentMode(mode)}
+                  >
+                    <Text style={styles.payBtnEmoji}>{MODE_ICONS[mode]}</Text>
+                    <Text style={[styles.payBtnLabel, { color: active ? "#000" : colors.text2 }]}>
+                      {mode.toUpperCase()}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </>
+        )}
 
         {/* ── Customer picker ── */}
         <View style={styles.customerSection}>
           <View style={styles.customerHeader}>
             <Text style={[styles.sectionLabel, { color: colors.text3 }]}>Customer</Text>
-            {isCreditMode && (
+            {!isQuotationMode && isCreditMode && (
               <View style={[styles.requiredBadge, { backgroundColor: colors.redBg }]}>
                 <Text style={[styles.requiredText, { color: colors.redText }]}>Required for credit</Text>
               </View>
@@ -323,6 +393,42 @@ export default function BillingScreen() {
           </View>
           <CustomerPicker selected={customer} onSelect={setCustomer} />
         </View>
+
+        {/* ── Recent Invoices ── */}
+        {recentInvoices.length > 0 && (
+          <View style={styles.recentSection}>
+            <Text style={[styles.sectionLabel, { color: colors.text3 }]}>Recent Invoices</Text>
+            <View style={[styles.recentBox, { borderColor: colors.border }]}>
+              {recentInvoices.map((inv, idx) => (
+                <Pressable
+                  key={inv._id}
+                  style={[
+                    styles.recentRow,
+                    {
+                      borderBottomColor: colors.border,
+                      borderBottomWidth: idx < recentInvoices.length - 1 ? 1 : 0,
+                    },
+                  ]}
+                  onPress={() => router.push(`/staff/invoice/${inv._id}`)}
+                >
+                  <View style={[styles.recentIcon, { backgroundColor: `${colors.primary}18` }]}>
+                    <Ionicons name="receipt-outline" size={16} color={colors.primary} />
+                  </View>
+                  <View style={styles.recentInfo}>
+                    <Text style={[styles.recentNum, { color: colors.foreground }]}>{inv.invoiceNumber}</Text>
+                    <Text style={[styles.recentSub, { color: colors.text3 }]}>
+                      {inv.customer?.name || "Walk-in"} · {inv.paymentMode.toUpperCase()}
+                    </Text>
+                  </View>
+                  <View style={styles.recentRight}>
+                    <Text style={[styles.recentTotal, { color: colors.foreground }]}>₹{inv.total.toLocaleString("en-IN")}</Text>
+                    <Ionicons name="chevron-forward" size={14} color={colors.text3} />
+                  </View>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        )}
       </ScrollView>
 
       {/* ── Sticky bottom bar ── */}
@@ -333,58 +439,84 @@ export default function BillingScreen() {
             {
               backgroundColor: colors.bg2,
               borderTopColor: colors.border,
-              paddingBottom: insets.bottom + 8,
+              paddingBottom: Platform.OS === "ios" ? insets.bottom + 80 : insets.bottom + 12,
             },
           ]}
         >
-          {customer && (
-            <View style={[styles.bottomCustomer, { backgroundColor: colors.bg3 }]}>
-              <Ionicons name="person" size={12} color={colors.text3} />
-              <Text style={[styles.bottomCustomerText, { color: colors.text2 }]} numberOfLines={1}>
-                {customer.name}
-              </Text>
-            </View>
-          )}
-          <View style={styles.bottomRow}>
-            <View style={styles.bottomSummary}>
-              <Text style={[styles.bottomTotal, { color: colors.foreground }]}>{fmt(total)}</Text>
-              <Text style={[styles.bottomMeta, { color: colors.text3 }]}>
-                {items.length} item{items.length !== 1 ? "s" : ""} ·{" "}
-                {paymentMode.toUpperCase()}
-              </Text>
-            </View>
+          {/* Amount summary row */}
+          <View style={styles.bottomSummaryRow}>
+            <Text style={[styles.bottomTotal, { color: colors.foreground }]}>{fmt(total)}</Text>
+            <Text style={[styles.bottomMeta, { color: colors.text3 }]}>
+              {items.length} item{items.length !== 1 ? "s" : ""}
+              {!isQuotationMode ? ` · ${paymentMode.toUpperCase()}` : ""}
+              {customer ? ` · ${customer.name}` : ""}
+            </Text>
+          </View>
+
+          {isQuotationMode ? (
+            /* Quotation mode — single save button */
             <Pressable
-              style={[
-                styles.placeBtn,
-                {
-                  backgroundColor: isCreditMode && !customer ? colors.bg4 : colors.primary,
-                  opacity: placing ? 0.7 : 1,
-                },
-              ]}
-              onPress={handlePlaceOrder}
-              disabled={placing}
+              style={[styles.placeBtn, { backgroundColor: colors.primary, opacity: placing ? 0.7 : 1 }]}
+              onPress={() => handlePlaceOrder("paid")}
+              disabled={!!placing}
             >
               {placing ? (
                 <ActivityIndicator color="#000" />
               ) : (
-                <>
-                  <Ionicons
-                    name="checkmark"
-                    size={16}
-                    color={isCreditMode && !customer ? colors.text3 : "#000"}
-                  />
-                  <Text
-                    style={[
-                      styles.placeBtnText,
-                      { color: isCreditMode && !customer ? colors.text3 : "#000" },
-                    ]}
-                  >
-                    Place Order
-                  </Text>
-                </>
+                <Text style={[styles.placeBtnText, { color: "#000" }]}>
+                  Save Quotation {fmt(total)} →
+                </Text>
               )}
             </Pressable>
-          </View>
+          ) : (
+            /* Sale mode — two buttons */
+            <View style={styles.btnRow}>
+              {/* Generate Invoice (Unpaid) */}
+              <Pressable
+                style={[
+                  styles.placeBtnOutline,
+                  {
+                    borderColor: !customer ? colors.border : colors.primary,
+                    opacity: placing === "unpaid" ? 0.7 : 1,
+                  },
+                ]}
+                onPress={() => handlePlaceOrder("unpaid")}
+                disabled={!!placing}
+              >
+                {placing === "unpaid" ? (
+                  <ActivityIndicator color={colors.primary} size="small" />
+                ) : (
+                  <View style={styles.placeBtnInner}>
+                    <Ionicons name="document-text-outline" size={16} color={!customer ? colors.text3 : colors.primary} />
+                    <Text style={[styles.placeBtnOutlineText, { color: !customer ? colors.text3 : colors.primary }]}>
+                      Unpaid
+                    </Text>
+                  </View>
+                )}
+              </Pressable>
+
+              {/* Generate Invoice (Paid) */}
+              <Pressable
+                style={[
+                  styles.placeBtnFill,
+                  { backgroundColor: colors.foreground, opacity: placing === "paid" ? 0.7 : 1 },
+                ]}
+                onPress={() => handlePlaceOrder("paid")}
+                disabled={!!placing}
+              >
+                {placing === "paid" ? (
+                  <ActivityIndicator color={colors.background} />
+                ) : (
+                  <View style={styles.placeBtnInner}>
+                    <Ionicons name="checkmark-circle" size={16} color={colors.background} />
+                    <Text style={[styles.placeBtnText, { color: colors.background }]}>
+                      Charge {fmt(total)}
+                    </Text>
+                  </View>
+                )}
+              </Pressable>
+            </View>
+          )}
         </View>
       )}
     </View>
@@ -401,38 +533,55 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     borderBottomWidth: 1,
   },
-  title: { fontSize: 20, fontWeight: "700", fontFamily: "Inter_700Bold" },
-  invNum: { fontSize: 11, fontFamily: "Inter_400Regular", marginTop: 2 },
-  scanRow: { flexDirection: "row", gap: 8, alignItems: "center" },
-  cameraBtn: {
+  title: { fontSize: 24, fontWeight: "800", fontFamily: "Inter_700Bold", letterSpacing: -0.5 },
+  invNum: { fontSize: 13, fontFamily: "Inter_500Medium", marginTop: 2 },
+  scanBanner: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: 12,
+    borderWidth: 1,
+    borderRadius: 14,
     paddingHorizontal: 16,
-    paddingVertical: 13,
-    borderRadius: 10,
+    paddingVertical: 14,
+    shadowColor: "#e8a825",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 3,
   },
-  cameraBtnText: { color: "#000", fontWeight: "700", fontFamily: "Inter_700Bold", fontSize: 13 },
+  scanIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  scanBannerTitle: { fontSize: 15, fontWeight: "700", fontFamily: "Inter_700Bold" },
+  scanBannerSub: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 2 },
   barcodeBox: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 13,
+    gap: 10,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
-  barcodeInput: { flex: 1, fontSize: 13, fontFamily: "Inter_400Regular" },
+  barcodeInput: { flex: 1, fontSize: 14, fontFamily: "Inter_500Medium" },
+  searchActionBtn: {
+    backgroundColor: "rgba(232, 168, 37, 0.15)",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
   searchBox: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    gap: 10,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
-  searchInput: { flex: 1, fontSize: 13, fontFamily: "Inter_400Regular" },
+  searchInput: { flex: 1, fontSize: 14, fontFamily: "Inter_500Medium" },
   results: { borderWidth: 1, borderRadius: 10, overflow: "hidden" },
   resultRow: {
     flexDirection: "row",
@@ -457,20 +606,26 @@ const styles = StyleSheet.create({
   },
   emptyCartText: { fontSize: 13, fontFamily: "Inter_400Regular", textAlign: "center", lineHeight: 20 },
   cartBox: { borderWidth: 1, borderRadius: 10, overflow: "hidden" },
-  cartRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 12, paddingVertical: 11 },
+  cartRow: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 12, paddingVertical: 12 },
+  cartThumb: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   cartInfo: { flex: 1, minWidth: 0 },
   cartName: { fontSize: 13, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
-  cartSub: { fontSize: 11, fontFamily: "Inter_400Regular", marginTop: 2 },
-  qtyRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  qtyBtn: { width: 22, height: 22, borderRadius: 5, borderWidth: 1, alignItems: "center", justifyContent: "center" },
+  cartSub: { fontSize: 11, fontFamily: "Inter_500Medium", marginTop: 3 },
+  qtyRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  qtyBtn: { width: 24, height: 24, borderRadius: 6, borderWidth: 1, alignItems: "center", justifyContent: "center" },
   qtyText: { fontSize: 13, fontWeight: "700", fontFamily: "Inter_700Bold", minWidth: 16, textAlign: "center" },
-  lineTotal: { fontSize: 12, fontWeight: "600", fontFamily: "Inter_600SemiBold", minWidth: 58, textAlign: "right" },
-  totalsBox: { borderWidth: 1, borderRadius: 10, padding: 12, gap: 6 },
+  totalsBox: { borderWidth: 1, borderRadius: 12, padding: 16, gap: 8 },
   totalRow: { flexDirection: "row", justifyContent: "space-between" },
-  totalLabel: { fontSize: 12, fontFamily: "Inter_400Regular" },
-  totalValue: { fontSize: 12, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
-  grandLabel: { fontSize: 14, fontWeight: "700", fontFamily: "Inter_700Bold" },
-  grandValue: { fontSize: 16, fontWeight: "700", fontFamily: "Inter_700Bold" },
+  totalLabel: { fontSize: 13, fontFamily: "Inter_500Medium" },
+  totalValue: { fontSize: 13, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
+  grandLabel: { fontSize: 16, fontWeight: "800", fontFamily: "Inter_700Bold" },
+  grandValue: { fontSize: 18, fontWeight: "800", fontFamily: "Inter_700Bold" },
   divider: { height: 1, marginVertical: 4 },
   paymentGrid: { flexDirection: "row", gap: 8 },
   payBtn: {
@@ -488,30 +643,57 @@ const styles = StyleSheet.create({
   requiredBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20 },
   requiredText: { fontSize: 10, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
   /* Bottom bar */
-  bottomBar: { borderTopWidth: 1, paddingHorizontal: 14, paddingTop: 10, gap: 6 },
-  bottomCustomer: {
-    flexDirection: "row",
+  bottomBar: { borderTopWidth: 1, paddingHorizontal: 16, paddingTop: 12, gap: 10 },
+  bottomSummaryRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  bottomTotal: { fontSize: 20, fontWeight: "800", fontFamily: "Inter_700Bold" },
+  bottomMeta: { fontSize: 12, fontFamily: "Inter_400Regular", textAlign: "right", flex: 1, paddingLeft: 8 },
+  btnRow: { flexDirection: "row", gap: 10 },
+  placeBtnInner: { flexDirection: "row", alignItems: "center", gap: 6 },
+  placeBtnOutline: {
+    flex: 1,
+    borderWidth: 1.5,
+    borderRadius: 12,
+    paddingVertical: 13,
     alignItems: "center",
-    gap: 6,
-    alignSelf: "flex-start",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
+    justifyContent: "center",
   },
-  bottomCustomerText: { fontSize: 11, fontFamily: "Inter_500Medium" },
-  bottomRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  bottomSummary: { flex: 1 },
-  bottomTotal: { fontSize: 18, fontWeight: "700", fontFamily: "Inter_700Bold" },
-  bottomMeta: { fontSize: 11, fontFamily: "Inter_400Regular", marginTop: 2 },
+  placeBtnOutlineText: { fontWeight: "700", fontFamily: "Inter_700Bold", fontSize: 13 },
+  placeBtnFill: {
+    flex: 2,
+    borderRadius: 12,
+    paddingVertical: 13,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   placeBtn: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
+    justifyContent: "center",
+    paddingVertical: 14,
+    borderRadius: 12,
+    width: "100%",
+  },
+  placeBtnText: { fontWeight: "700", fontFamily: "Inter_700Bold", fontSize: 15 },
+  /* Recent Invoices */
+  recentSection: { gap: 10 },
+  recentBox: { borderWidth: 1, borderRadius: 12, overflow: "hidden" },
+  recentRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+  },
+  recentIcon: {
+    width: 36,
+    height: 36,
     borderRadius: 10,
-    minWidth: 130,
+    alignItems: "center",
     justifyContent: "center",
   },
-  placeBtnText: { fontWeight: "700", fontFamily: "Inter_700Bold", fontSize: 14 },
+  recentInfo: { flex: 1, minWidth: 0 },
+  recentNum: { fontSize: 13, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
+  recentSub: { fontSize: 11, fontFamily: "Inter_400Regular", marginTop: 3 },
+  recentRight: { flexDirection: "row", alignItems: "center", gap: 4 },
+  recentTotal: { fontSize: 13, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
 });

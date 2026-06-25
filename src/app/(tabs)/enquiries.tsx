@@ -36,7 +36,7 @@ export default function EnquiriesScreen() {
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { paddingTop: insets.top + 12, borderBottomColor: colors.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={8}>
+        <Pressable onPress={() => router.canGoBack() ? router.canGoBack() ? router.back() : router.replace('/') : router.replace('/')} hitSlop={8}>
           <Ionicons name="arrow-back" size={22} color={colors.text2} />
         </Pressable>
         <Text style={[styles.title, { color: colors.foreground }]}>My Enquiries</Text>
@@ -103,3 +103,4 @@ const styles = StyleSheet.create({
   name: { fontSize: 13, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
   sub: { fontSize: 11, marginTop: 2, fontFamily: "Inter_400Regular" },
 });
+
