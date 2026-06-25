@@ -42,14 +42,27 @@ export default function ProductDetailScreen() {
 
   const handleWhatsApp = async () => {
     if (!product) return;
-    try {
-      await apiPost("/inquiries", { productId: product._id });
-      queryClient.invalidateQueries({ queryKey: ["my-inquiries"] });
-      Alert.alert("Success", "You enquired for this product.");
-    } catch (err: any) {
-      Alert.alert("Notice", "You enquired for this product. (Saved locally)");
-    }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    
+    const customerName = "John Doe"; // Mock customer name
+    const customerPhone = "+91 9876543210"; // Mock customer phone
+    
+    const message = `Hello, I want to inquire about the product: ${product.name} (Brand: ${product.brand}).\n\nCustomer Details:\nName: ${customerName}\nPhone: ${customerPhone}`;
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `whatsapp://send?phone=917987522364&text=${encodedMessage}`;
+    
+    try {
+      const supported = await Linking.canOpenURL(whatsappUrl);
+      if (supported) {
+        await Linking.openURL(whatsappUrl);
+        apiPost("/inquiries", { productId: product._id }).catch(() => {});
+        queryClient.invalidateQueries({ queryKey: ["my-inquiries"] });
+      } else {
+        Alert.alert("Error", "WhatsApp is not installed on your device.");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Could not open WhatsApp.");
+    }
   };
 
   const fmt = (n: number) => `₹${n.toLocaleString("en-IN")}`;

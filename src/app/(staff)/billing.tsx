@@ -276,11 +276,9 @@ export default function BillingScreen() {
 
         {items.length === 0 ? (
           <View style={[styles.emptyCart, { backgroundColor: colors.bg3, borderColor: colors.border }]}>
-            <Ionicons name="scan-outline" size={28} color={colors.text3} />
+            <Ionicons name="cart-outline" size={28} color={colors.text3} />
             <Text style={[styles.emptyCartText, { color: colors.text3 }]}>
-              Tap{" "}
-              <Text style={{ color: colors.primary, fontWeight: "700" }}>Scan</Text>
-              {" "}to scan a barcode, or search by product name
+              Cart is empty
             </Text>
           </View>
         ) : (

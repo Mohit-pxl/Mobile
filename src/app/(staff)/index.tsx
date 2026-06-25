@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
-import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Appearance, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View, useColorScheme } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import ActivityRow from "@/components/ActivityRow";
@@ -32,6 +32,11 @@ export default function StaffDashboard() {
   const { user, logout } = useAuth();
 
   const isAdmin = user?.role === "admin";
+  const scheme = useColorScheme();
+
+  const toggleTheme = () => {
+    Appearance.setColorScheme(scheme === 'dark' ? 'light' : 'dark');
+  };
 
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ["staff-dashboard"],
@@ -79,9 +84,15 @@ export default function StaffDashboard() {
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>Dashboard</Text>
           <Text style={[styles.headerSub, { color: colors.text3 }]}>{today}</Text>
         </View>
-        <Pressable onPress={logout}>
-          <Ionicons name="log-out-outline" size={22} color={colors.text2} />
-        </Pressable>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <Pressable onPress={() => router.push("/staff/notifications")} style={{ position: 'relative', padding: 4 }}>
+            <Ionicons name="notifications-outline" size={22} color={colors.text2} />
+            <View style={{ position: 'absolute', top: 2, right: 4, width: 8, height: 8, borderRadius: 4, backgroundColor: colors.destructive }} />
+          </Pressable>
+          <Pressable onPress={toggleTheme} style={{ padding: 4 }}>
+            <Ionicons name={scheme === 'dark' ? "sunny-outline" : "moon-outline"} size={22} color={colors.text2} />
+          </Pressable>
+        </View>
       </View>
 
       <ScrollView

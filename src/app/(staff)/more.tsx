@@ -6,12 +6,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AuthContext";
 import { useColors } from "@/hooks/useColors";
+import SignOutModal from "@/components/SignOutModal";
 
 export default function MoreScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user, logout } = useAuth();
+  const [showSignOut, setShowSignOut] = React.useState(false);
 
   const isAdmin = user?.role === "admin";
   const canViewReports = user?.permissions?.canViewReports || isAdmin;
@@ -90,9 +92,11 @@ export default function MoreScreen() {
         )}
 
         <View style={[styles.section, { borderTopColor: colors.border, borderBottomColor: colors.border, marginTop: 16 }]}>
-          <MenuItem icon="log-out-outline" label="Sign out" onPress={logout} color={colors.destructive} />
+          <MenuItem icon="log-out-outline" label="Sign out" onPress={() => setShowSignOut(true)} color={colors.destructive} />
         </View>
       </ScrollView>
+
+      <SignOutModal visible={showSignOut} onClose={() => setShowSignOut(false)} />
     </View>
   );
 }

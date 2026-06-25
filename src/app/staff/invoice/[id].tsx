@@ -49,7 +49,7 @@ export default function InvoiceScreen() {
       `*Total: ${fmt(inv.total)}*`,
       `Payment: ${inv.paymentMode.toUpperCase()}`,
       ``,
-      `ElectroShop, Indore`,
+      `Goldi Mobiles, Indore`,
     ].join("\n");
     Share.share({ message: lines });
   };
@@ -62,7 +62,7 @@ export default function InvoiceScreen() {
       return;
     }
     const msg = encodeURIComponent(
-      `Hi ${customer.name}, your invoice *${inv.invoiceNumber}* for ${fmt(inv.total)} via ${inv.paymentMode.toUpperCase()} has been generated. Thank you for shopping at ElectroShop!`
+      `Hi ${customer.name}, your invoice *${inv.invoiceNumber}* for ${fmt(inv.total)} via ${inv.paymentMode.toUpperCase()} has been generated. Thank you for shopping at Goldi Mobiles!`
     );
     Linking.openURL(`https://wa.me/${customer.phone.replace(/\D/g, "")}?text=${msg}`);
   };
@@ -122,7 +122,7 @@ export default function InvoiceScreen() {
         {/* ── Shop & Invoice Header ── */}
         <View style={styles.headerRow}>
           <View>
-            <Text style={[styles.shopName, { color: colors.primary }]}>⚡ ElectroShop</Text>
+            <Text style={[styles.shopName, { color: colors.primary }]}>⚡ Goldi Mobiles</Text>
             <Text style={[styles.shopAddress, { color: colors.text3 }]}>Vijay Nagar, Indore — MP 452010</Text>
             <Text style={[styles.shopGstin, { color: colors.text3 }]}>GSTIN: 23ABCDE1234F1Z5</Text>
           </View>

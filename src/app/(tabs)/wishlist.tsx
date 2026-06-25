@@ -21,18 +21,29 @@ export default function WishlistScreen() {
 
   const handleEnquireAll = async () => {
     if (items.length === 0) return;
-    try {
-      await Promise.all(items.map(p => apiPost("/inquiries", { productId: p._id })));
-      queryClient.invalidateQueries({ queryKey: ["my-inquiries"] });
-      // Remove from wishlist after enquiring
-      items.forEach(p => removeItem(p._id));
-      Alert.alert("Success", "You enquired for these products.");
-    } catch (err: any) {
-      // Remove from wishlist even if backend fails (saved locally concept)
-      items.forEach(p => removeItem(p._id));
-      Alert.alert("Notice", "You enquired for these products. (Saved locally)");
-    }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    const customerName = "John Doe"; // Mock customer name
+    const customerPhone = "+91 9876543210"; // Mock customer phone
+    
+    const productList = items.map(p => `- ${p.name} (Brand: ${p.brand})`).join('\n');
+    const message = `Hello, I want to inquire about the following products:\n${productList}\n\nCustomer Details:\nName: ${customerName}\nPhone: ${customerPhone}`;
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `whatsapp://send?phone=917987522364&text=${encodedMessage}`;
+    
+    try {
+      const supported = await Linking.canOpenURL(whatsappUrl);
+      if (supported) {
+        await Linking.openURL(whatsappUrl);
+        Promise.all(items.map(p => apiPost("/inquiries", { productId: p._id }))).catch(() => {});
+        queryClient.invalidateQueries({ queryKey: ["my-inquiries"] });
+        items.forEach(p => removeItem(p._id));
+      } else {
+        Alert.alert("Error", "WhatsApp is not installed on your device.");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Could not open WhatsApp.");
+    }
   };
 
   const handleRemove = (id: string, name: string) => {

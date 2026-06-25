@@ -15,6 +15,7 @@ import {
   Text,
   TextInput,
   View,
+  Modal,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -39,6 +40,7 @@ export default function AddProductScreen() {
   const canEditPrice = user?.permissions?.canEditPrice || isAdmin;
 
   const [saving, setSaving] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
   const [images, setImages] = useState<string[]>([]);
   const [form, setForm] = useState({
     name: "",
@@ -102,6 +104,28 @@ export default function AddProductScreen() {
       setImages((prev) => [...prev, result.assets[0].uri]);
     }
   };
+
+  const takePhoto = async () => {
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+    if (permissionResult.granted === false) {
+      Alert.alert("Permission Required", "You need to grant camera permissions to use this feature.");
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (!result.canceled) {
+      setImages((prev) => [...prev, result.assets[0].uri]);
+    }
+  };
+
+  const handleAddImage = () => {
+    setShowImageModal(true);
+  };
+
   const removeImage = (i: number) => setImages((prev) => prev.filter((_, idx) => idx !== i));
 
   const generateBarcode = () => {
@@ -227,7 +251,7 @@ export default function AddProductScreen() {
                 </Pressable>
               </View>
             ))}
-            <Pressable style={[styles.addImageBtn, { borderColor: colors.border2, backgroundColor: colors.bg3 }]} onPress={pickImage}>
+            <Pressable style={[styles.addImageBtn, { borderColor: colors.border2, backgroundColor: colors.bg3 }]} onPress={handleAddImage}>
               <Ionicons name="image-outline" size={24} color={colors.text3} />
               <Text style={{ color: colors.text3, fontSize: 12, marginTop: 4 }}>Add Image</Text>
             </Pressable>
@@ -310,6 +334,32 @@ export default function AddProductScreen() {
           />
         </ScrollView>
       </View>
+
+      <Modal visible={showImageModal} transparent animationType="fade" onRequestClose={() => setShowImageModal(false)}>
+        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.7)", justifyContent: "center", alignItems: "center" }}>
+          <View style={{ backgroundColor: colors.bg2, borderColor: colors.border, width: '85%', borderRadius: 16, padding: 20, borderWidth: 1 }}>
+            <Text style={{ fontSize: 18, fontWeight: '700', fontFamily: 'Inter_700Bold', color: colors.foreground, marginBottom: 16 }}>Add Image</Text>
+            
+            <Pressable style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.border }} onPress={() => { setShowImageModal(false); takePhoto(); }}>
+              <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.bg3, alignItems: 'center', justifyContent: 'center' }}>
+                <Ionicons name="camera" size={20} color={colors.primary} />
+              </View>
+              <Text style={{ fontSize: 15, fontFamily: 'Inter_500Medium', color: colors.foreground }}>Take Photo</Text>
+            </Pressable>
+            
+            <Pressable style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 }} onPress={() => { setShowImageModal(false); pickImage(); }}>
+              <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.bg3, alignItems: 'center', justifyContent: 'center' }}>
+                <Ionicons name="images" size={20} color={colors.primary} />
+              </View>
+              <Text style={{ fontSize: 15, fontFamily: 'Inter_500Medium', color: colors.foreground }}>Choose from Gallery</Text>
+            </Pressable>
+            
+            <Pressable style={{ marginTop: 16, paddingVertical: 12, borderRadius: 8, borderWidth: 1, borderColor: colors.border2, alignItems: 'center' }} onPress={() => setShowImageModal(false)}>
+              <Text style={{ fontSize: 13, fontFamily: 'Inter_600SemiBold', color: colors.text2 }}>Cancel</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }

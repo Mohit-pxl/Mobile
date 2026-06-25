@@ -1,0 +1,1979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ElectroShop — Full App Wireframes</title>
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --bg2: #1a1a1a;
+    --bg3: #242424;
+    --bg4: #2e2e2e;
+    --border: #333;
+    --border2: #3f3f3f;
+    --text: #f0f0f0;
+    --text2: #a0a0a0;
+    --text3: #666;
+    --accent: #e8a825;
+    --accent2: #c48b10;
+    --green: #22c55e;
+    --green-bg: #0d2b1a;
+    --green-text: #4ade80;
+    --red: #ef4444;
+    --red-bg: #2b0d0d;
+    --red-text: #f87171;
+    --amber: #f59e0b;
+    --amber-bg: #2b1f0a;
+    --amber-text: #fbbf24;
+    --blue: #3b82f6;
+    --blue-bg: #0d1b2b;
+    --blue-text: #60a5fa;
+    --wa: #25D366;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-xs: 6px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+    font-size: 14px;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* SIDEBAR NAV */
+  nav {
+    width: 220px;
+    min-width: 220px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    padding: 24px 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  nav .logo {
+    padding: 0 20px 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 12px;
+  }
+  nav .logo-title { font-size: 15px; font-weight: 600; color: var(--accent); }
+  nav .logo-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  nav .nav-group { padding: 8px 20px 4px; font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .8px; }
+  nav a {
+    display: block;
+    padding: 7px 20px;
+    font-size: 12px;
+    color: var(--text2);
+    text-decoration: none;
+    transition: all .15s;
+    border-left: 2px solid transparent;
+  }
+  nav a:hover { color: var(--text); background: var(--bg3); }
+  nav a.active { color: var(--accent); border-left-color: var(--accent); background: rgba(232,168,37,.06); }
+
+  /* MAIN CONTENT */
+  main { flex: 1; padding: 40px 48px; overflow-x: hidden; }
+
+  .page-title {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -.5px;
+    margin-bottom: 6px;
+  }
+  .page-sub { color: var(--text2); margin-bottom: 48px; font-size: 14px; }
+
+  /* SECTION */
+  .section { margin-bottom: 64px; scroll-margin-top: 32px; }
+  .section-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title .tag {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: var(--bg3);
+    color: var(--text3);
+    letter-spacing: .4px;
+  }
+  .section-title .tag.customer { background: rgba(59,130,246,.15); color: var(--blue-text); }
+  .section-title .tag.staff { background: rgba(232,168,37,.12); color: var(--accent); }
+  .section-title .tag.admin { background: rgba(239,68,68,.12); color: var(--red-text); }
+  .section-sub { font-size: 13px; color: var(--text3); margin-bottom: 24px; }
+
+  /* SCREENS GRID */
+  .screens { display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start; }
+
+  /* PHONE FRAME */
+  .phone-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .phone-label {
+    font-size: 12px;
+    color: var(--text2);
+    text-align: center;
+    max-width: 200px;
+    line-height: 1.4;
+  }
+  .phone-desc {
+    font-size: 11px;
+    color: var(--text3);
+    text-align: center;
+    max-width: 200px;
+    line-height: 1.5;
+  }
+
+  .phone {
+    width: 220px;
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 28px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  .notch {
+    height: 28px;
+    background: var(--bg3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    font-size: 10px;
+    color: var(--text3);
+    flex-shrink: 0;
+  }
+  .notch-center { width: 56px; height: 12px; background: var(--bg); border-radius: 6px; }
+  .screen-body { padding: 14px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+
+  /* UI COMPONENTS */
+  .ui-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2px;
+  }
+  .ui-title { font-size: 16px; font-weight: 700; color: var(--text); }
+  .ui-subtitle { font-size: 11px; color: var(--text3); }
+
+  .ui-search {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    font-size: 11px;
+    color: var(--text3);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .ui-chips { display: flex; gap: 5px; flex-wrap: nowrap; overflow: hidden; }
+  .chip {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .chip.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 600; }
+
+  .ui-divider { height: 1px; background: var(--border); margin: 2px 0; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 20px;
+    font-size: 9px;
+    font-weight: 600;
+  }
+  .badge-green { background: var(--green-bg); color: var(--green-text); }
+  .badge-amber { background: var(--amber-bg); color: var(--amber-text); }
+  .badge-red { background: var(--red-bg); color: var(--red-text); }
+  .badge-blue { background: var(--blue-bg); color: var(--blue-text); }
+  .badge-gray { background: var(--bg4); color: var(--text2); }
+  .badge-accent { background: rgba(232,168,37,.15); color: var(--accent); }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 9px;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+    cursor: pointer;
+  }
+  .btn-dark {
+    background: #e8e8e8;
+    color: #000;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 9px;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+  }
+  .btn-outline {
+    background: transparent;
+    color: var(--text2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    padding: 8px;
+    font-size: 11px;
+    text-align: center;
+  }
+  .btn-wa {
+    background: var(--wa);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 9px;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+  .btn-sm {
+    padding: 5px 10px;
+    border-radius: var(--radius-xs);
+    font-size: 10px;
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    background: var(--bg3);
+    text-align: center;
+  }
+
+  .input-field {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xs);
+    padding: 7px 9px;
+    font-size: 10px;
+    color: var(--text);
+  }
+  .input-label { font-size: 9px; color: var(--text3); margin-bottom: 2px; }
+
+  /* PRODUCT CARD */
+  .prod-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .prod-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px;
+    position: relative;
+  }
+  .prod-img {
+    background: var(--bg4);
+    border-radius: 6px;
+    width: 100%;
+    aspect-ratio: 1;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+  .prod-name { font-size: 10px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .prod-sub { font-size: 9px; color: var(--text3); margin-top: 1px; }
+  .prod-price { font-size: 12px; font-weight: 700; color: var(--accent); margin-top: 4px; }
+  .prod-mrp { font-size: 9px; color: var(--text3); text-decoration: line-through; }
+  .heart-icon { position: absolute; top: 8px; right: 8px; font-size: 13px; color: var(--text3); }
+
+  /* LIST ROW */
+  .list-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .list-row:last-child { border-bottom: none; }
+  .list-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--bg4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text2);
+    flex-shrink: 0;
+  }
+  .list-thumb {
+    width: 36px;
+    height: 36px;
+    border-radius: 7px;
+    background: var(--bg4);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+  .list-main { flex: 1; min-width: 0; }
+  .list-title { font-size: 10px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .list-sub { font-size: 9px; color: var(--text3); margin-top: 1px; }
+  .list-right { text-align: right; flex-shrink: 0; }
+  .list-price { font-size: 11px; font-weight: 700; color: var(--text); }
+
+  /* METRIC CARDS */
+  .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .metric-card {
+    background: var(--bg3);
+    border-radius: var(--radius-sm);
+    padding: 10px;
+  }
+  .metric-val { font-size: 15px; font-weight: 700; color: var(--text); }
+  .metric-lbl { font-size: 9px; color: var(--text3); margin-top: 2px; }
+  .metric-val.green { color: var(--green); }
+  .metric-val.red { color: var(--red); }
+  .metric-val.accent { color: var(--accent); }
+
+  /* SPEC TABLE */
+  .spec-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 10px;
+  }
+  .spec-row:last-child { border-bottom: none; }
+  .spec-key { color: var(--text3); }
+  .spec-val { color: var(--text); font-weight: 600; text-align: right; }
+
+  /* TOTAL ROWS */
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    font-size: 10px;
+  }
+  .total-row .lbl { color: var(--text3); }
+  .total-row .val { color: var(--text); font-weight: 600; }
+  .total-row.grand .lbl { font-size: 12px; font-weight: 700; color: var(--text); }
+  .total-row.grand .val { font-size: 14px; font-weight: 700; color: var(--accent); }
+
+  /* ACTIVITY ROW */
+  .activity-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .activity-row:last-child { border-bottom: none; }
+  .activity-icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    background: var(--bg4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .activity-main { flex: 1; }
+  .activity-title { font-size: 10px; font-weight: 600; color: var(--text); }
+  .activity-sub { font-size: 9px; color: var(--text3); }
+  .activity-time { font-size: 9px; color: var(--text3); flex-shrink: 0; }
+
+  /* TABS / BOTTOM NAV */
+  .bottom-nav {
+    display: flex;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    padding: 8px 0 10px;
+    flex-shrink: 0;
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    font-size: 9px;
+    color: var(--text3);
+    cursor: pointer;
+  }
+  .nav-item .icon { font-size: 17px; }
+  .nav-item.active { color: var(--accent); }
+  .nav-item.active .icon { color: var(--accent); }
+
+  /* SECTION LABELS */
+  .section-lbl {
+    font-size: 10px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    margin-bottom: 4px;
+    margin-top: 4px;
+  }
+
+  /* FAB */
+  .fab {
+    background: var(--accent);
+    color: #000;
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 10px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* PERMISSION ROW */
+  .perm-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 10px;
+  }
+  .perm-row:last-child { border-bottom: none; }
+  .toggle {
+    width: 26px;
+    height: 14px;
+    border-radius: 7px;
+    background: var(--green);
+    position: relative;
+    flex-shrink: 0;
+  }
+  .toggle::after {
+    content: '';
+    width: 10px; height: 10px;
+    background: #fff;
+    border-radius: 50%;
+    position: absolute;
+    right: 2px; top: 2px;
+  }
+  .toggle.off { background: var(--bg4); }
+  .toggle.off::after { right: auto; left: 2px; }
+
+  /* CHART BAR */
+  .chart-bars {
+    height: 60px;
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+  }
+  .chart-bar {
+    flex: 1;
+    background: var(--accent);
+    border-radius: 3px 3px 0 0;
+    opacity: .7;
+  }
+  .chart-bar.hi { opacity: 1; }
+
+  /* ANNOTATIONS */
+  .annotation {
+    font-size: 10px;
+    color: var(--text3);
+    background: var(--bg3);
+    border: 1px dashed var(--border2);
+    border-radius: 4px;
+    padding: 3px 7px;
+    display: inline-block;
+    margin-top: 2px;
+  }
+
+  /* QR CODE MOCK */
+  .qr-mock {
+    width: 56px;
+    height: 56px;
+    background: var(--bg4);
+    border-radius: 6px;
+    display: grid;
+    grid-template-columns: repeat(5,1fr);
+    gap: 2px;
+    padding: 4px;
+  }
+  .qr-cell { background: var(--text3); border-radius: 1px; }
+
+  /* BOTTOM STICKY */
+  .sticky-bottom {
+    padding: 10px 14px;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  /* SECTION DIVIDER */
+  .section-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 48px 0;
+  }
+  .section-divider-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 48px 0 32px;
+  }
+  .section-divider-label span {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .section-divider-label::before,
+  .section-divider-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* SCROLL INDICATOR */
+  .scroll-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; background: var(--accent); }
+  .scroll-dot.dim { background: var(--border2); }
+
+  /* MODAL OVERLAY */
+  .modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.6);
+    display: flex;
+    align-items: flex-end;
+    border-radius: 28px;
+    overflow: hidden;
+  }
+  .modal-sheet {
+    background: var(--bg2);
+    border-radius: 16px 16px 0 0;
+    padding: 14px;
+    width: 100%;
+    border-top: 1px solid var(--border2);
+  }
+  .modal-handle {
+    width: 36px;
+    height: 3px;
+    background: var(--border2);
+    border-radius: 2px;
+    margin: 0 auto 12px;
+  }
+
+  /* INVOICE */
+  .invoice-header {
+    background: var(--bg3);
+    border-radius: var(--radius-sm);
+    padding: 10px;
+    border: 1px solid var(--border);
+  }
+
+  /* STOCK MOVEMENT */
+  .mv-dot-green { width: 22px; height: 22px; border-radius: 5px; background: var(--green-bg); display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
+  .mv-dot-red { width: 22px; height: 22px; border-radius: 5px; background: var(--red-bg); display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
+  .mv-dot-amber { width: 22px; height: 22px; border-radius: 5px; background: var(--amber-bg); display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
+
+  .row { display: flex; gap: 6px; align-items: center; }
+  .row2 { display: flex; gap: 6px; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  /* LEGEND */
+  .legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 14px 18px;
+    background: var(--bg3);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    margin-bottom: 32px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text2); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <div class="logo-title">⚡ ElectroShop</div>
+    <div class="logo-sub">Full App Wireframes</div>
+  </div>
+
+  <div class="nav-group">Auth</div>
+  <a href="#login">Login / OAuth</a>
+
+  <div class="nav-group">Customer App</div>
+  <a href="#home">Home</a>
+  <a href="#categories">Categories</a>
+  <a href="#product-list">Product List</a>
+  <a href="#product-detail">Product Detail</a>
+  <a href="#search">Search</a>
+  <a href="#wishlist">Wishlist</a>
+  <a href="#enquiries">My Enquiries</a>
+  <a href="#profile">Profile</a>
+
+  <div class="nav-group">Staff / Admin</div>
+  <a href="#dashboard">Dashboard</a>
+  <a href="#inv-list">Product List</a>
+  <a href="#add-product">Add Product</a>
+  <a href="#billing">Billing / New Sale</a>
+  <a href="#invoice">Invoice View</a>
+  <a href="#stock-movements">Stock Movements</a>
+  <a href="#khata">Khata List</a>
+  <a href="#customer-ledger">Customer Ledger</a>
+  <a href="#quotations">Quotations</a>
+  <a href="#expenses">Expenses</a>
+  <a href="#reports">Reports</a>
+  <a href="#staff-mgmt">Staff Management</a>
+
+  <div class="nav-group">Shared</div>
+  <a href="#filter-sheet">Filter Sheet</a>
+  <a href="#notif">Push Notification</a>
+</nav>
+
+<main>
+  <div class="page-title">ElectroShop — Wireframes</div>
+  <div class="page-sub">Complete screen-by-screen layout with real data. Single Expo app, role-based navigation (customer / staff / admin).</div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>Customer screens</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Staff screens</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Admin-only screens</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>In stock</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>Low stock (≤ threshold)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Out of stock</div>
+  </div>
+
+  <!-- ═══════════════════════════════ AUTH ═══════════════════════════════ -->
+  <div class="section-divider-label"><span>Auth</span></div>
+
+  <section class="section" id="login">
+    <div class="section-title">Login <span class="tag">Both roles</span></div>
+    <div class="section-sub">Single Google OAuth screen. No separate staff sign-up — admin promotes users internally. Customers can skip login and browse as guest.</div>
+    <div class="screens">
+
+      <div class="phone-wrap">
+        <div class="phone" style="min-height:500px">
+          <div class="notch"><span>9:41</span><div class="notch-center"></div><span>▌▌ 100%</span></div>
+          <div class="screen-body" style="justify-content:center;align-items:center;text-align:center;gap:16px;padding-top:48px">
+            <div style="width:68px;height:68px;background:var(--bg3);border-radius:18px;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto">⚡</div>
+            <div>
+              <div style="font-size:22px;font-weight:800;letter-spacing:-.5px;color:var(--text)">ElectroShop</div>
+              <div style="font-size:12px;color:var(--text3);margin-top:4px">Indore's premium electronics store</div>
+            </div>
+            <div style="height:40px"></div>
+            <div class="btn-outline" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px">
+              <span>🔵</span> Continue with Google
+            </div>
+            <div style="font-size:10px;color:var(--text3);line-height:1.5">Staff? Your admin will share<br>your login details separately.</div>
+            <div style="margin-top:20px;font-size:11px;color:var(--text2);text-decoration:underline;cursor:pointer">Browse catalog without signing in →</div>
+          </div>
+        </div>
+        <div class="phone-label">Login Screen</div>
+        <div class="phone-desc">Google OAuth. After auth, backend returns JWT with role. Root layout redirects to (customer) or (staff) navigator.</div>
+      </div>
+
+      <div class="phone-wrap">
+        <div class="phone" style="min-height:500px">
+          <div class="notch"><span>9:41</span><div class="notch-center"></div><span>▌▌ 100%</span></div>
+          <div class="screen-body" style="justify-content:center;align-items:center;text-align:center;gap:12px;padding:20px">
+            <div style="font-size:28px">🔄</div>
+            <div style="font-size:14px;font-weight:600">Signing you in...</div>
+            <div style="font-size:11px;color:var(--text3)">Verifying with Google</div>
+            <div style="width:120px;height:3px;background:var(--bg4);border-radius:2px;overflow:hidden;margin-top:12px">
+              <div style="width:60%;height:100%;background:var(--accent);border-radius:2px"></div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">OAuth Loading State</div>
+        <div class="phone-desc">Progress shown while expo-auth-session verifies Google token with your Express backend.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════ CUSTOMER ═══════════════════════════════ -->
+  <div class="section-divider-label"><span>Customer App</span></div>
+
+  <section class="section" id="home">
+    <div class="section-title">Home <span class="tag customer">Customer</span></div>
+    <div class="section-sub">Default landing screen. Search bar, horizontal category chips, featured product grid. Data: GET /api/catalog/products?featured=true</div>
+    <div class="screens">
+
+      <div class="phone-wrap">
+        <div class="phone" style="min-height:580px">
+          <div class="notch"><span>9:41</span><div class="notch-center"></div><span>▌▌ 100%</span></div>
+          <div class="screen-body">
+            <div class="ui-topbar">
+              <div>
+                <div class="ui-title">Good morning 👋</div>
+                <div class="ui-subtitle">ElectroShop · Indore</div>
+              </div>
+              <div style="font-size:18px">🔔</div>
+            </div>
+            <div class="ui-search">🔍 <span>Search phones, earbuds, tablets...</span></div>
+            <div class="section-lbl">Categories</div>
+            <div class="ui-chips">
+              <div class="chip active">All</div>
+              <div class="chip">📱 Mobiles</div>
+              <div class="chip">🎧 Audio</div>
+              <div class="chip">⌚ Wearables</div>
+            </div>
+            <div class="section-lbl">Featured</div>
+            <div class="prod-grid">
+              <div class="prod-card">
+                <div class="heart-icon">🤍</div>
+                <div class="prod-img">📱</div>
+                <div class="prod-name">iPhone 15 128GB</div>
+                <div class="prod-sub">Apple · Midnight</div>
+                <div class="prod-price">₹69,900</div>
+                <div class="prod-mrp">MRP ₹79,900</div>
+                <div class="badge badge-green" style="margin-top:4px">In stock</div>
+              </div>
+              <div class="prod-card">
+                <div class="heart-icon">🤍</div>
+                <div class="prod-img">📱</div>
+                <div class="prod-name">Galaxy S24 256GB</div>
+                <div class="prod-sub">Samsung · Phantom</div>
+                <div class="prod-price">₹74,999</div>
+                <div class="prod-mrp">MRP ₹85,000</div>
+                <div class="badge badge-green" style="margin-top:4px">In stock</div>
+              </div>
+              <div class="prod-card">
+                <div class="heart-icon">❤️</div>
+                <div class="prod-img">🎧</div>
+                <div class="prod-name">Boat Airdopes 141</div>
+                <div class="prod-sub">Boat · Bold Black</div>
+                <div class="prod-price">₹1,299</div>
+                <div class="prod-mrp">MRP ₹2,990</div>
+                <div class="badge badge-green" style="margin-top:4px">In stock</div>
+              </div>
+              <div class="prod-card">
+                <div class="heart-icon">🤍</div>
+                <div class="prod-img">⌚</div>
+                <div class="prod-name">realme Watch 3</div>
+                <div class="prod-sub">realme · Black</div>
+                <div class="prod-price">₹3,499</div>
+                <div class="prod-mrp">MRP ₹4,999</div>
+                <div class="badge badge-amber" style="margin-top:4px">2 left</div>
+              </div>
+            </div>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item active"><div class="icon">🏠</div>Home</div>
+            <div class="nav-item"><div class="icon">📂</div>Browse</div>
+            <div class="nav-item"><div class="icon">🤍</div>Wishlist</div>
+            <div class="nav-item"><div class="icon">👤</div>Profile</div>
+          </div>
+        </div>
+        <div class="phone-label">Home — Light/Dark aware</div>
+        <div class="phone-desc">TanStack Query fetches featured products. Heart icon toggles wishlist (Zustand + AsyncStorage). Category chips filter by category slug.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="section" id="categories">
+    <div class="section-title">Categories <span class="tag customer">Customer</span></div>
+    <div class="section-sub">Full category listing. Data: GET /api/catalog/categories. Tapping a category navigates to product list with category pre-filtered.</div>
+    <div class="screens">
+      <div class="phone-wrap">
+        <div class="phone" style="min-height:500px">
+          <div class="notch"><span>9:41</span><div class="notch-center"></div><span>▌▌ 100%</span></div>
+          <div class="screen-body">
+            <div class="ui-topbar">
+              <div class="ui-title">Browse</div>
+            </div>
+            <div class="ui-search">🔍 <span>Search all categories</span></div>
+            <div style="display:flex;flex-direction:column;gap:0">
+              <div class="list-row">
+                <div class="list-thumb" style="background:var(--blue-bg)">📱</div>
+                <div class="list-main"><div class="list-title">Mobiles</div><div class="list-sub">42 products</div></div>
+                <div style="font-size:11px;color:var(--text3)">›</div>
+              </div>
+              <div class="list-row">
+                <div class="list-thumb" style="background:var(--amber-bg)">🎧</div>
+                <div class="list-main"><div class="list-title">Audio & Earbuds</div><div class="list-sub">28 products</div></div>
+                <div style="font-size:11px;color:var(--text3)">›</div>
+              </div>
+              <div class="list-row">
+                <div class="list-thumb" style="background:var(--green-bg)">⌚</div>
+                <div class="list-main"><div class="list-title">Wearables & Watches</div><div class="list-sub">15 products</div></div>
+                <div style="font-size:11px;color:var(--text3)">›</div>
+              </div>
+              <div class="list-row">
+                <div class="list-thumb" style="background:var(--bg4)">💻</div>
+                <div class="list-main"><div class="list-title">Tablets & iPads</div><div class="list-sub">12 products</div></div>
+                <div style="font-size:11px;color:var(--text3)">›</div>
+              </div>
+              <div class="list-row">
+                <div class="list-thumb" style="background:var(--bg4)">🔌</div>
+                <div class="list-main"><div class="list-title">Chargers & Cables</div><div class="list-sub">34 products</div></div>
+                <div style="font-size:11px;color:var(--text3)">›</div>
+              </div>
+              <div class="list-row">
+                <div class="list-thumb" style="background:var(--bg4)">🛡️</div>
+                <div class="list-main"><div class="list-title">Cases & Covers</div><div class="list-sub">61 products</div></div>
+                <div style="font-size:11px;color:var(--text3)">›</div>
+              </div>
+            </div>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item"><div class="icon">🏠</div>Home</div>
+            <div class="nav-item active"><div class="icon">📂</div>Browse</div>
+            <div class="nav-item"><div class="icon">🤍</div>Wishlist</div>
+            <div class="nav-item"><div class="icon">👤</div>Profile</div>
+          </div>
+        </div>
+        <div class="phone-label">Categories</div>
+        <div class="phone-desc">Product count shown per category. List from GET /api/catalog/categories with productCount field.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="product-list">
+    <div class="section-title">Product List <span class="tag customer">Customer</span></div>
+    <div class="section-sub">Paginated product grid with filter sheet and sort. Data: GET /api/catalog/products?category=&brand=&minPrice=&maxPrice=&search=&page=. costPrice never included.</div>
+    <div class="screens">
+
+      <div class="phone-wrap">
+        <div class="phone" style="min-height:560px">
+          <div class="notch"><span>9:41</span><div class="notch-center"></div><span>▌▌ 100%</span></div>
+          <div class="screen-body">
+            <div class="ui-topbar">
+              <div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px;color:var(--text3)">←</span><div class="ui-title">Mobiles</div></div>
+              <div style="display:flex;gap:8px;font-size:16px">🔍 ☰</div>
+            </div>
+            <div style="display:flex;gap:5px">
+              <div class="btn-sm" style="display:flex;align-items:center;gap:4px">⚙️ Filter</div>
+              <div class="btn-sm">Sort ↕</div>
+              <div class="chip" style="background:var(--blue-bg);border-color:var(--blue);color:var(--blue-text)">Samsung ×</div>
+            </div>
+            <div style="font-size:10px;color:var(--text3)">24 products · Showing 1–12</div>
+            <div class="prod-grid">
+              <div class="prod-card">
+                <div class="prod-img">📱</div>
+                <div class="prod-name">Redmi Note 13</div>
+                <div class="prod-sub">Xiaomi · 128GB</div>
+                <div class="prod-price">₹17,499</div>
+                <div class="badge badge-green" style="margin-top:4px">In stock</div>
+              </div>
+              <div class="prod-card">
+                <div class="prod-img">📱</div>
+                <div class="prod-name">Galaxy S24 256GB</div>
+                <div class="prod-sub">Samsung · 256GB</div>
+                <div class="prod-price">₹74,999</div>
+                <div class="badge badge-green" style="margin-top:4px">In stock</div>
+              </div>
+              <div class="prod-card">
+                <div class="prod-img">📱</div>
+                <div class="prod-name">OnePlus Nord 3</div>
+                <div class="prod-sub">OnePlus · 256GB</div>
+                <div class="prod-price">₹33,999</div>
+                <div class="badge badge-green" style="margin-top:4px">In stock</div>
+              </div>
+              <div class="prod-card">
+                <div class="prod-img">📱</div>
+                <div class="prod-name">iPhone 14 128GB</div>
+                <div class="prod-sub">Apple · Midnight</div>
+                <div class="prod-price">₹59,900</div>
+                <div class="badge badge-amber" style="margin-top:4px">Last 1</div>
+              </div>
+            </div>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item"><div class="icon">🏠</div>Home</div>
+            <div class="nav-item active"><div class="icon">📂</div>Browse</div>
+            <div class="nav-item"><div class="icon">🤍</div>Wishlist</div>
+            <div class="nav-item"><div class="icon">👤</div>Profile</div>
+          </div>
+        </div>
+        <div class="phone-label">Product List</div>
+        <div class="phone-desc">Infinite scroll via TanStack Query. Filter chip shows active filters; tap × to clear. Stock badge from product.stock vs lowStockThreshold.</div>
+      </div>
+
+      <div class="phone-wrap">
+        <div class="phone" style="min-height:560px;position:relative">
+          <div class="notch"><span>9:41</span><div class="notch-center"></div><span>▌▌ 100%</span></div>
+          <div class="screen-body" style="opacity:.4">
+            <div class="prod-grid">
+              <div class="prod-card"><div class="prod-img">📱</div></div>
+              <div class="prod-card"><div class="prod-img">📱</div></div>
+            </div>
+          </div>
+          <div class="modal-overlay">
+            <div class="modal-sheet">
+              <div class="modal-handle"></div>
+              <div style="font-size:13px;font-weight:700;margin-bottom:12px">Filter products</div>
+              <div class="section-lbl">Brand</div>
+              <div class="ui-chips" style="flex-wrap:wrap;gap:5px;margin-bottom:10px">
+                <div class="chip active">Apple</div>
+                <div class="chip active">Samsung</div>
+                <div class="chip">Xiaomi</div>
+                <div class="chip">OnePlus</div>
+              </div>
+              <div class="section-lbl">Price range</div>
+              <div style="display:flex;gap:6px;margin-bottom:10px">
+                <div class="input-field" style="flex:1">₹ 0</div>
+                <div style="font-size:10px;color:var(--text3);align-self:center">to</div>
+                <div class="input-field" style="flex:1">₹ 80,000</div>
+              </div>
+              <div class="section-lbl">Availability</div>
+              <div class="perm-row">
+                <span>In stock only</span>
+                <div class="toggle"></div>
+              </div>
+              <div style="display:flex;gap:6px;margin-top:10px">
+                <div class="btn-outline" style="flex:1">Clear all</div>
+                <div class="btn-primary" style="flex:1.5">Show 18 results</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">Filter Sheet</div>
+        <div class="phone-desc">Bottom sheet (react-native-reanimated). Brand chips, price range inputs, in-stock toggle. "Show N results" updates in real time.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="section" id="product-detail">
+    <div class="section-title">Product Detail <span class="tag customer">Customer</span></div>
+    <div class="section-sub">Full product page from GET /api/catalog/products/:id. Image carousel, specs, EMI hint, sticky WhatsApp enquire button. Fires POST /api/inquiries in background on tap.</div>
+    <div class="screens">
+      <div class="phone-wrap">
+        <div class="phone" style="min-height:620px">
+          <div class="notch"><span>9:41</span><div class="notch-center"></div><span>▌▌ 100%</span></div>
+          <div style="display:flex;justify-content:space-between;padding:10px 14px 0;font-size:16px">
+            <span style="color:var(--text3)">←</span>
+            <span style="font-size:14px;color:var(--text3)">🤍</span>
+          </div>
+          <div style="background:var(--bg3);height:160px;margin:8px 14px 0;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:56px;position:relative">
+            📱
+            <div style="position:absolute;bottom:8px;left:0;right:0;display:flex;justify-content:center;gap:4px">
+              <div class="scroll-dot"></div>
+              <div class="scroll-dot dim"></div>
+              <div class="scroll-dot dim"></div>
+            </div>
+          </div>
+          <div class="screen-body" style="padding-top:10px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div>
+                <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Samsung</div>
+                <div style="font-size:17px;font-weight:800;letter-spacing:-.3px">Galaxy A55 5G</div>
+              </div>
+              <div class="badge badge-green">In stock</div>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:8px">
+              <span style="font-size:22px;font-weight:800;color:var(--accent)">₹32,999</span>
+              <span style="font-size:11px;color:var(--text3);text-decoration:line-through">₹36,999</span>
+              <span style="font-size:10px;color:var(--green);font-weight:600">11% off</span>
+            </div>
+            <div style="display:flex;gap:5px;align-items:center">
+              <span class="section-lbl" style="margin:0">Colors:</span>
+              <div style="width:14px;height:14px;border-radius:50%;background:#3b82f6;border:2px solid var(--accent)"></div>
+              <div style="width:14px;height:14px;border-radius:50%;background:#9ca3af"></div>
+              <div style="width:14px;height:14px;border-radius:50%;background:#374151"></div>
+            </div>
+            <div class="ui-divider"></div>
+            <div class="section-lbl">Specifications</div>
+            <div>
+              <div class="spec-row"><span class="spec-key">Display</span><span class="spec-val">6.6" Super AMOLED</span></div>
+              <div class="spec-row"><span class="spec-key">RAM / Storage</span><span class="spec-val">8GB / 128GB</span></div>
+              <div class="spec-row"><span class="spec-key">Camera</span><span class="spec-val">50MP triple</span></div>
+              <div class="spec-row"><span class="spec-key">Battery</span><span class="spec-val">5000 mAh</span></div>
+              <div class="spec-row"><span class="spec-key">Processor</span><span class="spec-val">Exynos 1480</span></div>
+              <div class="spec-row"><span class="spec-key">OS</span><span class="spec-val">Android 14</span></div>
+            </div>
+            <div class="section-lbl">EMI plans</div>
+            <div style="background:var(--bg3);border-radius:var(--radius-xs);padding:8px;border:1px solid var(--border);font-size:10px;display:flex;justify-content:space-between">
+              <span style="color:var(--text2)">HDFC Bank, 6 months</span>
+              <span style="font-weight:700;color:var(--accent)">₹5,720/mo</span>
+            </div>
+          </div>
+          <div class="sticky-bottom">
+            <div class="btn-wa">📲 Enquire on WhatsApp</div>
+          </div>
+        </div>
+        <div class="phone-label">Product Detail — Customer View</div>
+        <div class="phone-desc">Matches the screenshot you shared. WhatsApp button builds: "Hi, interested in Galaxy A55 5G (₹32,999). Available?" and opens wa.me. Also fires POST /api/inquiries.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="search">
+    <div class="section-title">Search <span class="tag customer">Customer</span></div>
+    <div class="section-sub">Debounced live search (300ms useDebounce). Recent searches in AsyncStorage. Backend: MongoDB text index on name + brand + description.</div>
+    <div class="screens">
+      <div class="phone-wrap">
+        <div class="phone" style="min-height:480px">
+          <div class="notch"><span>9:41</span><div class="notch-center"></div><span>▌▌ 100%</span></div>
+          <div class="screen-body">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:16px;color:var(--text3)">←</span>
+              <div class="ui-search" style="flex:1;border-color:var(--accent)">🔍 <span style="color:var(--text)">iphone</span><span style="color:var(--text3);margin-left:auto">✕</span></div>
+            </div>
+            <div class="section-lbl">Recent searches</div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap">
+              <div class="chip">boat airdopes</div>
+              <div class="chip">samsung s24</div>
+              <div class="chip">65w charger</div>
+            </div>
+            <div class="ui-divider"></div>
+            <div style="font-size:10px;color:var(--text3)">3 results for "iphone"</div>
+            <div>
+              <div class="list-row">
+                <div class="list-thumb">📱</div>
+                <div class="list-main"><div class="list-title">iPhone 15 128GB</div><div class="list-sub">Apple · ₹69,900</div></div>
+                <div class="badge badge-green">Stock</div>
+              </div>
+              <div class="list-row">
+                <div class="list-thumb">📱</div>
+                <div class="list-main"><div class="list-title">iPhone 14 128GB</div><div class="list-sub">Apple · ₹59,900</div></div>
+                <div class="badge badge-amber">Last 1</div>
+              </div>
+              <div class="list-row">
+                <div class="list-thumb">📱</div>
+                <div class="list-main"><div class="list-title">iPhone 13 128GB</div><div class="list-sub">Apple · ₹49,900</div></div>
+                <div class="badge badge-red">Sold out</div>
+              </div>
+            </div>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item"><div class="icon">🏠</div>Home</div>
+            <div class="nav-item active"><div class="icon">📂</div>Browse</div>
+            <div class="nav-item"><div class="icon">🤍</div>Wishlist</div>
+            <div class="nav-item"><div class="icon">👤</div>Profile</div>
+          </div>
+        </div>
+        <div class="phone-label">Search Results</div>
+        <div class="phone-desc">Debounced text input. Highlights matched query in result names. Empty state shows "No results for X — try a different spelling."</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="wishlist">
+    <div class="section-title">Wishlist <span class="tag customer">Customer</span></div>
+    <div class="section-sub">Saved products. Persists locally (Zustand + AsyncStorage). Syncs to backend if user is logged in. "Enquire all" builds a combined WhatsApp message.</div>
+    <div class="screens">
+      <div class="phone-wrap">
+        <div class="phone" style="min-height:460px">
+          <div class="notch"><span>9:41</span><div class="notch-center"></div><span>▌▌ 100%</span></div>
+          <div class="screen-body">
+            <div class="ui-topbar"><div class="ui-title">Wishlist</div><div style="font-size:10px;color:var(--text3)">3 items</div></div>
+            <div>
+              <div class="list-row">
+                <div class="list-thumb">📱</div>
+                <div class="list-main"><div class="list-title">iPhone 15 128GB</div><div class="list-sub">Apple · ₹69,900</div></div>
+                <span style="font-size:14px;color:var(--text3)">🗑</span>
+              </div>
+              <div class="list-row">
+                <div class="list-thumb">🎧</div>
+                <div class="list-main"><div class="list-title">Boat Airdopes 141</div><div class="list-sub">Boat · ₹1,299</div></div>
+                <span style="font-size:14px;color:var(--text3)">🗑</span>
+              </div>
+              <div class="list-row">
+                <div class="list-thumb">⌚</div>
+                <div class="list-main"><div class="list-title">realme Watch 3</div><div class="list-sub">realme · ₹3,499</div></div>
+                <span style="font-size:14px;color:var(--text3)">🗑</span>
+              </div>
+            </div>
+            <div class="btn-wa" style="margin-top:auto">📲 Enquire all 3 on WhatsApp</div>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item"><div class="icon">🏠</div>Home</div>
+            <div class="nav-item"><div class="icon">📂</div>Browse</div>
+            <div class="nav-item active"><div class="icon">❤️</div>Wishlist</div>
+            <div class="nav-item"><div class="icon">👤</div>Profile</div>
+          </div>
+        </div>
+        <div class="phone-label">Wishlist</div>
+        <div class="phone-desc">Swipe left to delete. "Enquire all" builds: "Hi, I'm interested in: iPhone 15, Airdopes 141, realme Watch 3. Please share availability."</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="enquiries">
+    <div class="section-title">My Enquiries <span class="tag customer">Customer</span></div>
+    <div class="section-sub">Requires login. Lists past product enquiries with re-open WhatsApp action. Data: GET /api/inquiries?userId=me</div>
+    <div class="screens">
+      <div class="phone-wrap">
+        <div class="phone" style="min-height:440px">
+          <div class="notch"><span>9:41</span><div class="notch-center"></div><span>▌▌ 100%</span></div>
+          <div class="screen-body">
+            <div class="ui-topbar"><div class="ui-title">My Enquiries</div></div>
+            <div>
+              <div class="list-row">
+                <div class="list-thumb">📱</div>
+                <div class="list-main"><div class="list-title">iPhone 15 128GB</div><div class="list-sub">Enquired · 22 Jun · 9:41 AM</div></div>
+                <div style="font-size:18px;color:var(--wa)">📲</div>
+              </div>
+              <div class="list-row">
+                <div class="list-thumb">📱</div>
+                <div class="list-main"><div class="list-title">Galaxy S24 256GB</div><div class="list-sub">Enquired · 20 Jun · 3:22 PM</div></div>
+                <div style="font-size:18px;color:var(--wa)">📲</div>
+              </div>
+              <div class="list-row">
+                <div class="list-thumb">🎧</div>
+                <div class="list-main"><div class="list-title">Boat Airdopes 141</div><div class="list-sub">Enquired · 18 Jun · 11:05 AM</div></div>
+                <div style="font-size:18px;color:var(--wa)">📲</div>
+              </div>
+            </div>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item"><div class="icon">🏠</div>Home</div>
+            <div class="nav-item"><div class="icon">📂</div>Browse</div>
+            <div class="nav-item"><div class="icon">🤍</div>Wishlist</div>
+            <div class="nav-item active"><div class="icon">👤</div>Profile</div>
+          </div>
+        </div>
+        <div class="phone-label">Enquiry History</div>
+        <div class="phone-desc">WhatsApp icon reopens chat. Admin sees these inquiries in the analytics tab on the admin side.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════ STAFF / ADMIN ═══════════════════════════════ -->
+  <div class="section-divider-label"><span>Staff & Admin App</span></div>
+
+  <section class="section" id="dashboard">
+    <div class="section-title">Dashboard <span class="tag staff">Staff / Admin</span></div>
+    <div class="section-sub">First screen after staff login. 4 metric cards, quick actions, recent activity feed. All data from GET /api/billing, /api/products, /api/customers aggregated.</div>
+    <div class="screens">
+      <div class="phone-wrap">
+        <div class="phone" style="min-height:580px">
+          <div class="notch"><span>9:41</span><div class="notch-center"></div><span>▌▌ 100%</span></div>
+          <div class="screen-body">
+            <div class="ui-topbar">
+              <div><div class="ui-title">Dashboard</div><div class="ui-subtitle">Mon, 22 Jun 2026</div></div>
+              <div style="display:flex;gap:10px;font-size:16px">🔔 ☰</div>
+            </div>
+            <div class="metric-grid">
+              <div class="metric-card"><div class="metric-val accent">₹18,400</div><div class="metric-lbl">Today's sales</div></div>
+              <div class="metric-card"><div class="metric-val">₹8,20,500</div><div class="metric-lbl">Stock value</div></div>
+              <div class="metric-card"><div class="metric-val red">4 items</div><div class="metric-lbl">⚠ Low stock</div></div>
+              <div class="metric-card"><div class="metric-val red">₹27,500</div><div class="metric-lbl">Pending dues</div></div>
+            </div>
+            <div style="display:flex;gap:6px">
+              <div class="btn-sm" style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px">➕ New sale</div>
+              <div class="btn-sm" style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px">📦 Add product</div>
+            </div>
+            <div class="section-lbl">Recent activity</div>
+            <div>
+              <div class="activity-row">
+                <div class="activity-icon">🧾</div>
+                <div class="activity-main">
+                  <div class="activity-title">INV-1042 · Rahul Sharma</div>
+                  <div class="activity-sub">iPhone 15 · ₹69,900 · Cash</div>
+                </div>
+                <div class="activity-time">2m ago</div>
+              </div>
+              <div class="activity-row">
+                <div class="activity-icon" style="background:var(--green-bg)">📥</div>
+                <div class="activity-main">
+                  <div class="activity-title">Stock received</div>
+                  <div class="activity-sub">Boat Airdopes 141 · +20 units</div>
+                </div>
+                <div class="activity-time">1h ago</div>
+              </div>
+              <div class="activity-row">
+                <div class="activity-icon" style="background:var(--amber-bg)">⚠️</div>
+                <div class="activity-main">
+                  <div class="activity-title">Low stock alert</div>
+                  <div class="activity-sub">realme Watch 3 · 2 units left</div>
+                </div>
+                <div class="activity-time">3h ago</div>
+              </div>
+              <div class="activity-row">
+                <div class="activity-icon">🧾</div>
+                <div class="activity-main">
+                  <div class="activity-title">INV-1041 · Walk-in</div>
+                  <div class="activity-sub">Galaxy S24 · ₹74,999 · UPI</div>
+                </div>
+                <div class="activity-time">4h ago</div>
+              </div>
+            </div>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item active"><div class="icon">🏠</div>Home</div>
+            <div class="nav-item"><div class="icon">📦</div>Products</div>
+            <div class="nav-item"><div class="icon">🧾</div>Billing</div>
+            <div class="nav-item"><div class="icon">⋯</div>More</div>
+          </div>
+        </div>
+        <div class="phone-label">Staff Dashboard</div>
+        <div class="phone-desc">Admin sees Reports tab. Staff sees only Home, Products, Billing, More. Metric cards are permission-gated (stock value visible to admin only).</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="inv-list">
+    <div class="section-title">Inventory — Product List <span class="tag staff">Staff / Admin</span></div>
+    <div class="section-sub">Full product list with stock badges, selling price, SKU. Staff cannot see costPrice. FAB to add new product. Data: GET /api/products</div>
+    <div class="screens">
+      <div class="phone-wrap">
+        <div class="phone" style="min-height:560px">
+          <div class="notch"><span>9:41</span><div class="notch-center"></div><span>▌▌ 100%</span></div>
+          <div class="screen-body">
+            <div class="ui-topbar">
+              <div class="ui-title">Products</div>
+              <div class="fab">➕ Add</div>
+            </div>
+            <div class="ui-search">🔍 <span>Search by name, SKU, barcode</span></div>
+            <div style="display:flex;gap:4px">
+              <div class="chip active">All</div>
+              <div class="chip">Mobiles</div>
+              <div class="chip">Audio</div>
+              <div class="chip">⚠ Low stock</div>
+            </div>
+            <div>
+              <div class="list-row">
+                <div class="list-thumb">📱</div>
+                <div class="list-main">
+                  <div class="list-title">iPhone 15 128GB</div>
+                  <div class="list-sub">Apple · EL-0041 · ₹69,900</div>
+                </div>
+                <div class="list-right"><div class="badge badge-green">12 pcs</div></div>
+              </div>
+              <div class="list-row">
+                <div class="list-thumb">📱</div>
+                <div class="list-main">
+                  <div class="list-title">Galaxy S24 256GB</div>
+                  <div class="list-sub">Samsung · EL-0038 · ₹74,999</div>
+                </div>
+                <div class="list-right"><div class="badge badge-green">7 pcs</div></div>
+              </div>
+              <div class="list-row">
+                <div class="list-thumb">⌚</div>
+                <div class="list-main">
+                  <div class="list-title">realme Watch 3</div>
+                  <div class="list-sub">realme · EL-0055 · ₹3,499</div>
+                </div>
+                <div class="list-right"><div class="badge badge-amber">2 pcs ⚠</div></div>
+              </div>
+              <div class="list-row">
+                <div class="list-thumb">🎧</div>
+                <div class="list-main">
+                  <div class="list-title">Boat Airdopes 141</div>
+                  <div class="list-sub">Boat · EL-0022 · ₹1,299</div>
+                </div>
+                <div class="list-right"><div class="badge badge-green">24 pcs</div></div>
+              </div>
+              <div class="list-row">
+                <div class="list-thumb">📱</div>
+                <div class="list-main">
+                  <div class="list-title">Pixel 7a 128GB</div>
+                  <div class="list-sub">Google · EL-0049 · ₹43,999</div>
+                </div>
+                <div class="list-right"><div class="badge badge-red">0 pcs</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item"><div class="icon">🏠</div>Home</div>
+            <div class="nav-item active"><div class="icon">📦</div>Products</div>
+            <div class="nav-item"><div class="icon">🧾</div>Billing</div>
+            <div class="nav-item"><div class="icon">⋯</div>More</div>
+          </div>
+        </div>
+        <div class="phone-label">Inventory List</div>
+        <div class="phone-desc">⚠ chip filters to products below lowStockThreshold. Swipe row to edit/delete. Stock badge color: green ≥ threshold, amber ≤ threshold, red = 0.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="add-product">
+    <div class="section-title">Add / Edit Product <span class="tag staff">Staff / Admin</span></div>
+    <div class="section-sub">Multi-step form. Images upload to S3 via presigned URL. Staff: costPrice field hidden. Admin: all fields visible. Barcode scan or auto-generate (EL- prefix nanoid).</div>
+    <div class="screens">
+      <div class="phone-wrap">
+        <div class="phone" style="min-height:620px">
+          <div class="notch"><span>9:41</span><div class="notch-center"></div><span>▌▌ 100%</span></div>
+          <div class="screen-body">
+            <div class="ui-topbar">
+              <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--text3)">←</span><div class="ui-title">Add product</div></div>
+            </div>
+            <div style="background:var(--bg3);border-radius:var(--radius-sm);height:72px;display:flex;align-items:center;justify-content:center;gap:10px;border:1px dashed var(--border2)">
+              <div style="width:44px;height:44px;border-radius:8px;background:var(--bg2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:18px">📷</div>
+              <div style="width:44px;height:44px;border-radius:8px;background:var(--bg2);border:1px dashed var(--border2);display:flex;align-items:center;justify-content:center;font-size:18px">➕</div>
+              <div style="font-size:9px;color:var(--text3)">Upload photos (S3)</div>
+            </div>
+            <div>
+              <div class="input-label">Product name *</div>
+              <div class="input-field">iPhone 15 128GB</div>
+            </div>
+            <div style="display:flex;gap:6px">
+              <div style="flex:1"><div class="input-label">Brand *</div><div class="input-field">Apple</div></div>
+              <div style="flex:1"><div class="input-label">Category *</div><div class="input-field" style="color:var(--text3)">Mobiles ▾</div></div>
+            </div>
+            <div style="background:var(--bg3);border-radius:var(--radius-xs);padding:8px;border:1px solid var(--border)">
+              <div style="font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">🔒 Admin only — Pricing</div>
+              <div style="display:flex;gap:5px">
+                <div style="flex:1"><div class="input-label">Cost price ₹</div><div class="input-field">62,000</div></div>
+                <div style="flex:1"><div class="input-label">MRP ₹</div><div class="input-field">79,900</div></div>
+              </div>
+            </div>
+            <div><div class="input-label">Selling price ₹ *</div><div class="input-field">69,900</div></div>
+            <div style="display:flex;gap:6px">
+              <div style="flex:1"><div class="input-label">Stock qty *</div><div class="input-field">12</div></div>
+              <div style="flex:1"><div class="input-label">Low stock alert</div><div class="input-field">5</div></div>
+            </div>
+            <div style="display:flex;gap:6px">
+              <div style="flex:1"><div class="input-label">GST %</div><div class="input-field">18%</div></div>
+              <div style="flex:1"><div class="input-label">HSN code</div><div class="input-field">8517</div></div>
+            </div>
+            <div><div class="input-label">Barcode</div>
+              <div style="display:flex;gap:5px">
+                <div class="input-field" style="flex:1">894536201044</div>
+                <div class="btn-sm" style="display:flex;align-items:center;gap:3px">📷 Scan</div>
+                <div class="btn-sm">Auto</div>
+              </div>
+            </div>
+            <div class="section-lbl">Specifications (key → value)</div>
+            <div>
+              <div style="display:flex;gap:5px;margin-bottom:4px">
+                <div class="input-field" style="flex:1;font-size:9px">Display</div>
+                <div class="input-field" style="flex:1.5;font-size:9px">6.1" OLED</div>
+                <span style="font-size:14px;color:var(--text3);align-self:center">✕</span>
+              </div>
+              <div style="display:flex;gap:5px;margin-bottom:4px">
+                <div class="input-field" style="flex:1;font-size:9px">RAM</div>
+                <div class="input-field" style="flex:1.5;font-size:9px">6 GB</div>
+                <span style="font-size:14px;color:var(--text3);align-self:center">✕</span>
+              </div>
+              <div class="btn-sm" style="width:fit-content">➕ Add spec row</div>
+            </div>
+            <div class="btn-primary" style="margin-top:4px">Save product</div>
+          </div>
+        </div>
+        <div class="phone-label">Add / Edit Product</div>
+        <div class="phone-desc">react-hook-form + zod. Cost price section only renders if usePermission('canViewCostPrice'). Images upload direct-to-S3 via presigned URL before form submit.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="billing">
+    <div class="section-title">Billing — New Sale <span class="tag staff">Staff / Admin</span></div>
+    <div class="section-sub">Barcode scan → auto-add to cart. Cart with qty steppers. Live GST calculation. Payment mode selector. Credit mode shows customer picker. POST /api/billing/invoices (Mongoose transaction).</div>
+    <div class="screens">
+      <div class="phone-wrap">
+        <div class="phone" style="min-height:600px">
+          <div class="notch"><span>9:41</span><div class="notch-center"></div><span>▌▌ 100%</span></div>
+          <div class="screen-body" style="padding-bottom:0">
+            <div class="ui-topbar">
+              <div class="ui-title">New Sale</div>
+              <div style="font-size:10px;color:var(--text3)">INV-1043</div>
+            </div>
+            <div style="background:#1a1a1a;border:1px solid var(--accent);border-radius:var(--radius-sm);padding:10px;display:flex;align-items:center;gap:8px">
+              <span style="font-size:20px">📷</span>
+              <div>
+                <div style="font-size:11px;font-weight:600;color:var(--accent)">Scan barcode</div>
+                <div style="font-size:9px;color:var(--text3)">Point camera at product barcode</div>
+              </div>
+            </div>
+            <div class="ui-search">🔍 <span>Or search by product name</span></div>
+            <div class="section-lbl">Cart · 3 items</div>
+            <div>
+              <div class="list-row">
+                <div class="list-thumb">📱</div>
+                <div class="list-main"><div class="list-title">iPhone 15 128GB</div><div class="list-sub">₹69,900 × 1</div></div>
+                <div style="display:flex;align-items:center;gap:6px">
+                  <div style="width:18px;height:18px;border-radius:4px;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text2)">−</div>
+                  <span style="font-size:11px;font-weight:700">1</span>
+                  <div style="width:18px;height:18px;border-radius:4px;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text2)">+</div>
+                </div>
+              </div>
+              <div class="list-row">
+                <div class="list-thumb">🎧</div>
+                <div class="list-main"><div class="list-title">Boat Airdopes 141</div><div class="list-sub">₹1,299 × 2 = ₹2,598</div></div>
+                <div style="display:flex;align-items:center;gap:6px">
+                  <div style="width:18px;height:18px;border-radius:4px;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px">−</div>
+                  <span style="font-size:11px;font-weight:700">2</span>
+                  <div style="width:18px;height:18px;border-radius:4px;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px">+</div>
+                </div>
+              </div>
+              <div class="list-row">
+                <div class="list-thumb">🔌</div>
+                <div class="list-main"><div class="list-title">20W USB-C Charger</div><div class="list-sub">₹899 × 1</div></div>
+                <div style="display:flex;align-items:center;gap:6px">
+                  <div style="width:18px;height:18px;border-radius:4px;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px">−</div>
+                  <span style="font-size:11px;font-weight:700">1</span>
+                  <div style="width:18px;height:18px;border-radius:4px;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px">+</div>
+                </div>
+              </div>
+            </div>
+            <div class="ui-divider"></div>
+            <div class="total-row"><span class="lbl">Subtotal</span><span class="val">₹73,496</span></div>
+            <div class="total-row"><span class="lbl">CGST (9%)</span><span class="val">₹6,615</span></div>
+            <div class="total-row"><span class="lbl">SGST (9%)</span><span class="val">₹6,615</span></div>
+            <div class="total-row grand"><span class="lbl">Total</span><span class="val">₹86,725</span></div>
+            <div class="ui-divider"></div>
+            <div class="section-lbl">Payment mode</div>
+            <div style="display:flex;gap:4px">
+              <div style="flex:1;background:var(--accent);color:#000;border-radius:6px;padding:6px;font-size:10px;font-weight:700;text-align:center">Cash</div>
+              <div class="btn-sm" style="flex:1">UPI</div>
+              <div class="btn-sm" style="flex:1">Card</div>
+              <div class="btn-sm" style="flex:1">Credit</div>
+            </div>
+          </div>
+          <div class="sticky-bottom">
+            <div class="btn-dark">Charge ₹86,725 →</div>
+          </div>
+        </div>
+        <div class="phone-label">New Sale — Billing</div>
+        <div class="phone-desc">Barcode scan via expo-camera. Each scan calls GET /api/products/barcode/:code. GST per item (from product.gstPercent). Credit mode shows customer selector. Mongoose transaction on submit.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="invoice">
+    <div class="section-title">Invoice View <span class="tag staff">Staff / Admin</span></div>
+    <div class="section-sub">GST-compliant invoice with shop GSTIN, itemized list, CGST/SGST breakdown. PDF download via expo-print. WhatsApp share sends PDF link to customer.</div>
+    <div class="screens">
+      <div class="phone-wrap">
+        <div class="phone" style="min-height:600px">
+          <div class="notch"><span>9:41</span><div class="notch-center"></div><span>▌▌ 100%</span></div>
+          <div class="screen-body">
+            <div class="ui-topbar">
+              <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--text3)">←</span><div class="ui-title">Invoice #INV-1042</div></div>
+              <div class="badge badge-green">Paid</div>
+            </div>
+            <div class="invoice-header">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                <div>
+                  <div style="font-size:13px;font-weight:800;color:var(--accent)">⚡ ElectroShop</div>
+                  <div style="font-size:9px;color:var(--text3)">Vijay Nagar, Indore — MP 452010</div>
+                  <div style="font-size:9px;color:var(--text3)">GSTIN: 23ABCDE1234F1Z5</div>
+                </div>
+                <div style="text-align:right">
+                  <div style="font-size:10px;color:var(--text2);font-weight:600">INV-1042</div>
+                  <div style="font-size:9px;color:var(--text3)">22 Jun 2026</div>
+                  <div style="font-size:9px;color:var(--text3)">9:41 AM</div>
+                </div>
+              </div>
+              <div class="ui-divider" style="margin:8px 0"></div>
+              <div style="font-size:9px;color:var(--text3)">Bill to: <span style="color:var(--text)">Rahul Sharma</span> · 9876543210</div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border)">
+                <span style="font-size:9px;color:var(--text3);font-weight:600">ITEM</span>
+                <span style="font-size:9px;color:var(--text3);font-weight:600">AMT</span>
+              </div>
+              <div class="list-row" style="padding:6px 0">
+                <div class="list-main">
+                  <div class="list-title">iPhone 15 128GB</div>
+                  <div class="list-sub">₹69,900 × 1 · GST 18%</div>
+                </div>
+                <div class="list-price">₹69,900</div>
+              </div>
+              <div class="list-row" style="padding:6px 0">
+                <div class="list-main">
+                  <div class="list-title">20W USB-C Charger</div>
+                  <div class="list-sub">₹899 × 1 · GST 18%</div>
+                </div>
+                <div class="list-price">₹899</div>
+              </div>
+            </div>
+            <div style="background:var(--bg3);border-radius:var(--radius-xs);padding:9px;border:1px solid var(--border)">
+              <div class="total-row"><span class="lbl">Subtotal</span><span class="val">₹70,799</span></div>
+              <div class="total-row"><span class="lbl">CGST 9%</span><span class="val">₹6,372</span></div>
+              <div class="total-row"><span class="lbl">SGST 9%</span><span class="val">₹6,372</span></div>
+              <div class="ui-divider" style="margin:4px 0"></div>
+              <div class="total-row grand"><span class="lbl">Total</span><span class="val">₹83,543</span></div>
+              <div class="total-row"><span class="lbl">Paid — Cash</span><span style="color:var(--green);font-weight:700;font-size:10px">₹83,543 ✓</span></div>
+            </div>
+            <div style="display:flex;gap:5px">
+              <div class="btn-sm" style="flex:1;display:flex;align-items:center;justify-content:center;gap:3px">⬇ PDF</div>
+              <div class="btn-wa" style="flex:1.5;padding:7px;font-size:10px">📲 Send to customer</div>
+              <div class="btn-sm" style="flex:1;display:flex;align-items:center;justify-content:center;gap:3px">↗ Share</div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">GST Invoice</div>
+        <div class="phone-desc">PDF generated via invoice.service.js (pdfkit). WhatsApp send shares the S3 PDF URL. Invoice number is auto-incremented nanoid: INV-XXXX.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="stock-movements">
+    <div class="section-title">Stock Movements <span class="tag staff">Staff / Admin</span></div>
+    <div class="section-sub">Per-product audit trail. Every sale, purchase, and manual adjustment is a StockMovement document. Data: GET /api/stock/movements/:productId</div>
+    <div class="screens">
+      <div class="phone-wrap">
+        <div class="phone" style="min-height:480px">
+          <div class="notch"><span>9:41</span><div class="notch-center"></div><span>▌▌ 100%</span></div>
+          <div class="screen-body">
+            <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--text3)">←</span>
+              <div><div class="ui-title" style="font-size:14px">Stock movements</div><div class="ui-subtitle">iPhone 15 128GB · 12 in stock</div></div>
+            </div>
+            <div style="display:flex;gap:4px">
+              <div class="chip active">All</div>
+              <div class="chip">📥 In</div>
+              <div class="chip">📤 Out</div>
+              <div class="chip">⚙ Adjust</div>
+            </div>
+            <div>
+              <div class="list-row">
+                <div class="mv-dot-green">📥</div>
+                <div class="list-main">
+                  <div class="list-title">+15 units — purchase</div>
+                  <div class="list-sub">Ravi (Admin) · 20 Jun 2026</div>
+                </div>
+                <div style="font-size:11px;font-weight:700;color:var(--green)">+15</div>
+              </div>
+              <div class="list-row">
+                <div class="mv-dot-red">📤</div>
+                <div class="list-main">
+                  <div class="list-title">−1 unit · INV-1042</div>
+                  <div class="list-sub">Priya (Staff) · 22 Jun 2026</div>
+                </div>
+                <div style="font-size:11px;font-weight:700;color:var(--red)">−1</div>
+              </div>
+              <div class="list-row">
+                <div class="mv-dot-red">📤</div>
+                <div class="list-main">
+                  <div class="list-title">−1 unit · INV-1039</div>
+                  <div class="list-sub">Priya (Staff) · 21 Jun 2026</div>
+                </div>
+                <div style="font-size:11px;font-weight:700;color:var(--red)">−1</div>
+              </div>
+              <div class="list-row">
+                <div class="mv-dot-amber">⚙</div>
+                <div class="list-main">
+                  <div class="list-title">−1 damaged unit</div>
+                  <div class="list-sub">Manual adjustment · Ravi · 19 Jun</div>
+                </div>
+                <div style="font-size:11px;font-weight:700;color:var(--amber)">−1</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">Stock Movement Log</div>
+        <div class="phone-desc">All stock changes are immutable log entries (StockMovement collection). Product.stock is always derived, never directly edited. Audit trail visible to all staff.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="khata">
+    <div class="section-title">Khata — Customer List <span class="tag staff">Staff / Admin</span></div>
+    <div class="section-sub">Party ledger overview. Total outstanding balance, per-customer running balance. Data: GET /api/customers with balance field.</div>
+    <div class="screens">
+      <div class="phone-wrap">
+        <div class="phone" style="min-height:500px">
+          <div class="notch"><span>9:41</span><div class="notch-center"></div><span>▌▌ 100%</span></div>
+          <div class="screen-body">
+            <div class="ui-topbar"><div class="ui-title">Khata</div><div class="fab">➕ Add</div></div>
+            <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:12px;display:flex;gap:0;border:1px solid var(--border)">
+              <div style="flex:1;text-align:center">
+                <div style="font-size:16px;font-weight:800;color:var(--red)">₹27,500</div>
+                <div style="font-size:9px;color:var(--text3);margin-top:2px">Total outstanding</div>
+              </div>
+              <div style="width:1px;background:var(--border)"></div>
+              <div style="flex:1;text-align:center">
+                <div style="font-size:16px;font-weight:800;color:var(--text)">8</div>
+                <div style="font-size:9px;color:var(--text3);margin-top:2px">Customers</div>
+              </div>
+            </div>
+            <div>
+              <div class="list-row">
+                <div class="list-avatar">RS</div>
+                <div class="list-main"><div class="list-title">Rahul Sharma</div><div class="list-sub">Last: iPhone 15 · 22 Jun</div></div>
+                <div class="list-right"><div style="font-size:11px;font-weight:700;color:var(--red)">₹15,000</div><div style="font-size:9px;color:var(--text3)">due</div></div>
+              </div>
+              <div class="list-row">
+                <div class="list-avatar">AP</div>
+                <div class="list-main"><div class="list-title">Anjali Patel</div><div class="list-sub">Last: Galaxy S24 · 18 Jun</div></div>
+                <div class="list-right"><div style="font-size:11px;font-weight:700;color:var(--red)">₹12,500</div><div style="font-size:9px;color:var(--text3)">due</div></div>
+              </div>
+              <div class="list-row">
+                <div class="list-avatar">MK</div>
+                <div class="list-main"><div class="list-title">Manish Kumar</div><div class="list-sub">Last: Earbuds · 15 Jun</div></div>
+                <div class="list-right"><div style="font-size:11px;font-weight:700;color:var(--green)">Cleared</div></div>
+              </div>
+              <div class="list-row">
+                <div class="list-avatar">SV</div>
+                <div class="list-main"><div class="list-title">Suresh Verma</div><div class="list-sub">Last: Charger · 10 Jun</div></div>
+                <div class="list-right"><div style="font-size:11px;font-weight:700;color:var(--green)">Cleared</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">Khata — Customer Balances</div>
+        <div class="phone-desc">Balance = sum of CustomerTransaction amounts. Updated atomically on every credit sale and payment received. Pull-to-refresh. Tap row → ledger detail.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="customer-ledger">
+    <div class="section-title">Customer Ledger Detail <span class="tag staff">Staff / Admin</span></div>
+    <div class="section-sub">Full transaction history for one customer. Record payment button. Statement export. Data: GET /api/customers/:id with transactions.</div>
+    <div class="screens">
+      <div class="phone-wrap">
+        <div class="phone" style="min-height:520px">
+          <div class="notch"><span>9:41</span><div class="notch-center"></div><span>▌▌ 100%</span></div>
+          <div class="screen-body">
+            <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--text3)">←</span>
+              <div style="display:flex;align-items:center;gap:7px">
+                <div class="list-avatar">RS</div>
+                <div><div class="ui-title" style="font-size:14px">Rahul Sharma</div><div class="ui-subtitle">9876543210</div></div>
+              </div>
+            </div>
+            <div style="background:var(--red-bg);border:1px solid var(--red);border-radius:var(--radius-sm);padding:12px;text-align:center">
+              <div style="font-size:20px;font-weight:800;color:var(--red)">₹15,000</div>
+              <div style="font-size:9px;color:var(--red-text);margin-top:2px">Outstanding balance</div>
+            </div>
+            <div style="display:flex;gap:5px">
+              <div class="btn-primary" style="flex:2">+ Record payment</div>
+              <div class="btn-sm" style="flex:1;display:flex;align-items:center;justify-content:center;gap:3px">⬇ Statement</div>
+            </div>
+            <div class="section-lbl">Transaction history</div>
+            <div>
+              <div class="list-row">
+                <div class="mv-dot-red">📤</div>
+                <div class="list-main"><div class="list-title">Sale · INV-1042</div><div class="list-sub">iPhone 15 128GB · 22 Jun</div></div>
+                <div style="font-size:10px;font-weight:700;color:var(--red)">−₹84,900</div>
+              </div>
+              <div class="list-row">
+                <div class="mv-dot-green">💰</div>
+                <div class="list-main"><div class="list-title">Payment received</div><div class="list-sub">UPI · Ref: HDFC22061 · 20 Jun</div></div>
+                <div style="font-size:10px;font-weight:700;color:var(--green)">+₹54,900</div>
+              </div>
+              <div class="list-row">
+                <div class="mv-dot-red">📤</div>
+                <div class="list-main"><div class="list-title">Sale · INV-1028</div><div class="list-sub">Accessories bundle · 15 Jun</div></div>
+                <div style="font-size:10px;font-weight:700;color:var(--red)">−₹3,500</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">Customer Ledger</div>
+        <div class="phone-desc">CustomerTransaction collection stores every event. Balance = (all sales − all payments received). Statement export as PDF via GET /api/customers/:id/statement/pdf.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="quotations">
+    <div class="section-title">Quotations <span class="tag staff">Staff / Admin</span></div>
+    <div class="section-sub">Draft estimates before billing. Status: draft → sent → converted / expired. "Convert to invoice" reuses billing transaction logic. Data: GET /api/quotations</div>
+    <div class="screens">
+      <div class="phone-wrap">
+        <div class="phone" style="min-height:480px">
+          <div class="notch"><span>9:41</span><div class="notch-center"></div><span>▌▌ 100%</span></div>
+          <div class="screen-body">
+            <div class="ui-topbar"><div class="ui-title">Quotations</div><div class="fab">➕ New</div></div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px;border:1px solid var(--border)">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                  <div><div class="list-title">QT-0018 · Anjali Patel</div><div class="list-sub" style="margin-top:2px">Galaxy S24 + Case + Earbuds</div></div>
+                  <div class="badge badge-blue">Sent</div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+                  <span style="font-size:13px;font-weight:700;color:var(--accent)">₹82,499</span>
+                  <span style="font-size:9px;color:var(--text3)">Valid till 25 Jun</span>
+                </div>
+                <div class="btn-sm" style="margin-top:8px;text-align:center">Convert to invoice →</div>
+              </div>
+              <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px;border:1px solid var(--border)">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                  <div><div class="list-title">QT-0017 · Manish Kumar</div><div class="list-sub" style="margin-top:2px">iPhone 15 + AirPods</div></div>
+                  <div class="badge badge-green">Converted</div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+                  <span style="font-size:13px;font-weight:700;color:var(--text)">₹79,800</span>
+                  <span style="font-size:9px;color:var(--green)">→ INV-1041</span>
+                </div>
+              </div>
+              <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px;border:1px solid var(--border)">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                  <div><div class="list-title">QT-0016 · Walk-in</div><div class="list-sub" style="margin-top:2px">Redmi Note 13 × 2</div></div>
+                  <div class="badge badge-gray">Draft</div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+                  <span style="font-size:13px;font-weight:700;color:var(--text)">₹34,998</span>
+                  <span style="font-size:9px;color:var(--text3)">Created 21 Jun</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">Quotations</div>
+        <div class="phone-desc">Convert-to-invoice runs POST /api/quotations/:id/convert — calls same billing service (stock check + transaction). Sets quotation.status = 'converted'. Links to INV number.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="expenses">
+    <div class="section-title">Expenses <span class="tag staff">Staff / Admin</span></div>
+    <div class="section-sub">Non-purchase shop costs (rent, salary, electricity). Used in profit/loss report. Data: GET /api/expenses?range=monthly. Categories: rent, salary, electricity, transport, other.</div>
+    <div class="screens">
+      <div class="phone-wrap">
+        <div class="phone" style="min-height:500px">
+          <div class="notch"><span>9:41</span><div class="notch-center"></div><span>▌▌ 100%</span></div>
+          <div class="screen-body">
+            <div class="ui-topbar"><div class="ui-title">Expenses</div><div class="fab">➕ Add</div></div>
+            <div class="metric-grid">
+              <div class="metric-card"><div class="metric-val">₹14,800</div><div class="metric-lbl">This month</div></div>
+              <div class="metric-card"><div class="metric-val">₹1,800</div><div class="metric-lbl">This week</div></div>
+            </div>
+            <div class="section-lbl">By category — June</div>
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <div style="display:flex;align-items:center;gap:7px">
+                <span style="font-size:9px;color:var(--text3);width:54px">Rent</span>
+                <div style="flex:1;height:7px;background:var(--bg4);border-radius:3px"><div style="width:80%;height:100%;background:var(--accent);border-radius:3px"></div></div>
+                <span style="font-size:10px;font-weight:600;width:44px;text-align:right">₹8,000</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:7px">
+                <span style="font-size:9px;color:var(--text3);width:54px">Salary</span>
+                <div style="flex:1;height:7px;background:var(--bg4);border-radius:3px"><div style="width:45%;height:100%;background:var(--accent);border-radius:3px;opacity:.7"></div></div>
+                <span style="font-size:10px;font-weight:600;width:44px;text-align:right">₹4,500</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:7px">
+                <span style="font-size:9px;color:var(--text3);width:54px">Electric</span>
+                <div style="flex:1;height:7px;background:var(--bg4);border-radius:3px"><div style="width:18%;height:100%;background:var(--accent);border-radius:3px;opacity:.5"></div></div>
+                <span style="font-size:10px;font-weight:600;width:44px;text-align:right">₹1,800</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:7px">
+                <span style="font-size:9px;color:var(--text3);width:54px">Other</span>
+                <div style="flex:1;height:7px;background:var(--bg4);border-radius:3px"><div style="width:5%;height:100%;background:var(--accent);border-radius:3px;opacity:.3"></div></div>
+                <span style="font-size:10px;font-weight:600;width:44px;text-align:right">₹500</span>
+              </div>
+            </div>
+            <div class="ui-divider"></div>
+            <div>
+              <div class="list-row">
+                <div class="activity-icon">🏢</div>
+                <div class="list-main"><div class="list-title">Shop rent · June 2026</div><div class="list-sub">22 Jun · Added by Ravi</div></div>
+                <div style="font-size:11px;font-weight:700">₹8,000</div>
+              </div>
+              <div class="list-row">
+                <div class="activity-icon">⚡</div>
+                <div class="list-main"><div class="list-title">Electricity bill</div><div class="list-sub">18 Jun · Added by Ravi</div></div>
+                <div style="font-size:11px;font-weight:700">₹1,800</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">Expenses</div>
+        <div class="phone-desc">Each expense category maps to the Expense.category enum. Monthly total feeds into GET /api/reports/profit-loss for net profit = revenue − COGS − expenses.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="reports">
+    <div class="section-title">Reports <span class="tag admin">Admin only</span></div>
+    <div class="section-sub">Protected by requirePermission('canViewReports'). Sales trend chart, P&L summary (revenue − COGS − expenses), top products, low-stock list, export. Data: GET /api/reports/*</div>
+    <div class="screens">
+      <div class="phone-wrap">
+        <div class="phone" style="min-height:600px">
+          <div class="notch"><span>9:41</span><div class="notch-center"></div><span>▌▌ 100%</span></div>
+          <div class="screen-body">
+            <div class="ui-topbar">
+              <div class="ui-title">Reports</div>
+              <div style="display:flex;gap:4px">
+                <div class="chip active">Monthly</div>
+                <div class="chip">Daily</div>
+              </div>
+            </div>
+            <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px;border:1px solid var(--border)">
+              <div class="section-lbl" style="margin:0 0 6px">Sales — June 2026</div>
+              <div class="chart-bars">
+                <div class="chart-bar" style="height:35%"></div>
+                <div class="chart-bar" style="height:55%"></div>
+                <div class="chart-bar" style="height:40%"></div>
+                <div class="chart-bar hi" style="height:80%"></div>
+                <div class="chart-bar" style="height:50%"></div>
+                <div class="chart-bar hi" style="height:95%"></div>
+                <div class="chart-bar" style="height:30%"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--text3);margin-top:4px">
+                <span>Wk 1</span><span>Wk 2</span><span>Wk 3</span><span>Wk 4</span>
+              </div>
+            </div>
+            <div class="metric-grid">
+              <div class="metric-card"><div class="metric-val">₹3,84,200</div><div class="metric-lbl">Revenue</div></div>
+              <div class="metric-card"><div class="metric-val green">₹89,600</div><div class="metric-lbl">Gross profit</div></div>
+              <div class="metric-card"><div class="metric-val red">₹14,800</div><div class="metric-lbl">Expenses</div></div>
+              <div class="metric-card"><div class="metric-val green">₹74,800</div><div class="metric-lbl">Net profit</div></div>
+            </div>
+            <div class="section-lbl">Top products · June</div>
+            <div>
+              <div class="list-row">
+                <span style="font-size:10px;color:var(--text3);width:14px">1</span>
+                <div class="list-main"><div class="list-title">iPhone 15 128GB</div><div class="list-sub">8 units sold</div></div>
+                <div style="font-size:11px;font-weight:700;color:var(--accent)">₹1,25,800</div>
+              </div>
+              <div class="list-row">
+                <span style="font-size:10px;color:var(--text3);width:14px">2</span>
+                <div class="list-main"><div class="list-title">Galaxy S24 256GB</div><div class="list-sub">3 units sold</div></div>
+                <div style="font-size:11px;font-weight:700;color:var(--accent)">₹74,999</div>
+              </div>
+              <div class="list-row">
+                <span style="font-size:10px;color:var(--text3);width:14px">3</span>
+                <div class="list-main"><div class="list-title">Boat Airdopes 141</div><div class="list-sub">22 units sold</div></div>
+                <div style="font-size:11px;font-weight:700;color:var(--accent)">₹28,578</div>
+              </div>
+            </div>
+            <div class="btn-sm" style="display:flex;align-items:center;justify-content:center;gap:5px">⬇ Export CSV / PDF</div>
+          </div>
+        </div>
+        <div class="phone-label">Reports — Admin only</div>
+        <div class="phone-desc">Chart via victory-native. P&L: gross profit = revenue − (qty × costPrice). Net profit = gross profit − monthly expenses. Export calls GET /api/reports/sales/export?format=csv.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="staff-mgmt">
+    <div class="section-title">Staff Management <span class="tag admin">Admin only</span></div>
+    <div class="section-sub">Admin creates staff accounts. Per-staff permission toggles (canViewCostPrice, canEditPrice, canViewReports, canManageStaff). Data: GET /api/users/staff, PATCH /api/users/:id/role</div>
+    <div class="screens">
+      <div class="phone-wrap">
+        <div class="phone" style="min-height:540px">
+          <div class="notch"><span>9:41</span><div class="notch-center"></div><span>▌▌ 100%</span></div>
+          <div class="screen-body">
+            <div class="ui-topbar"><div class="ui-title">Staff</div><div class="fab">➕ Add staff</div></div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px;border:1px solid var(--border)">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div class="list-avatar" style="background:rgba(239,68,68,.15);color:var(--red-text)">RA</div>
+                  <div style="flex:1"><div class="list-title">Ravi Agarwal</div><div class="list-sub">+91 98765 43210 · Owner</div></div>
+                  <div class="badge badge-accent">Admin</div>
+                </div>
+                <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">
+                  <div class="badge badge-green">All access</div>
+                </div>
+              </div>
+              <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px;border:1px solid var(--border)">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div class="list-avatar">PS</div>
+                  <div style="flex:1"><div class="list-title">Priya Sharma</div><div class="list-sub">+91 99887 76655 · Counter staff</div></div>
+                  <div class="badge badge-gray">Staff</div>
+                </div>
+                <div style="margin-top:8px">
+                  <div class="perm-row"><span style="font-size:10px">View cost price</span><div class="toggle off"></div></div>
+                  <div class="perm-row"><span style="font-size:10px">Edit selling price</span><div class="toggle off"></div></div>
+                  <div class="perm-row"><span style="font-size:10px">View reports</span><div class="toggle off"></div></div>
+                  <div class="perm-row"><span style="font-size:10px">Create billing</span><div class="toggle"></div></div>
+                </div>
+              </div>
+              <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px;border:1px solid var(--border)">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div class="list-avatar">AK</div>
+                  <div style="flex:1"><div class="list-title">Amit Khanna</div><div class="list-sub">+91 91234 56789 · Junior staff</div></div>
+                  <div class="badge badge-gray">Staff</div>
+                </div>
+                <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">
+                  <div class="badge badge-green">Billing only</div>
+                  <div class="badge badge-red">No cost/reports</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">Staff Management</div>
+        <div class="phone-desc">Permission toggles call PATCH /api/users/:id/role. Backend enforces same permissions — frontend toggles are UX only. Deactivate removes app access without deleting the account.</div>
+      </div>
+
+      <div class="phone-wrap">
+        <div class="phone" style="min-height:540px">
+          <div class="notch"><span>9:41</span><div class="notch-center"></div><span>▌▌ 100%</span></div>
+          <div class="screen-body">
+            <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--text3)">←</span><div class="ui-title">Add staff</div></div>
+            <div>
+              <div class="input-label">Full name *</div>
+              <div class="input-field">Priya Sharma</div>
+            </div>
+            <div>
+              <div class="input-label">Phone number *</div>
+              <div class="input-field">+91 99887 76655</div>
+            </div>
+            <div class="section-lbl">Role</div>
+            <div style="display:flex;gap:5px">
+              <div style="flex:1;background:var(--accent);color:#000;border-radius:6px;padding:8px;text-align:center;font-size:11px;font-weight:700">Staff</div>
+              <div class="btn-sm" style="flex:1">Admin</div>
+            </div>
+            <div class="section-lbl">Permissions</div>
+            <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:9px;border:1px solid var(--border)">
+              <div class="perm-row"><span>View cost price</span><div class="toggle off"></div></div>
+              <div class="perm-row"><span>Edit selling price</span><div class="toggle off"></div></div>
+              <div class="perm-row"><span>View reports & P&L</span><div class="toggle off"></div></div>
+              <div class="perm-row"><span>Manage staff</span><div class="toggle off"></div></div>
+              <div class="perm-row"><span>Create billing / invoices</span><div class="toggle"></div></div>
+              <div class="perm-row"><span>View & adjust stock</span><div class="toggle"></div></div>
+            </div>
+            <div class="btn-primary">Save & generate PIN</div>
+          </div>
+        </div>
+        <div class="phone-label">Add Staff Form</div>
+        <div class="phone-desc">Admin fills this out. Backend creates User with role='staff' and the permission flags. The new staff member logs in via Google OAuth using their own Google account.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="section" id="notif">
+    <div class="section-title">Push Notification <span class="tag staff">Staff / Admin</span></div>
+    <div class="section-sub">Sent via expo-server-sdk when stock drops below lowStockThreshold or a credit invoice is overdue. Tap notification opens the relevant product or customer screen.</div>
+    <div class="screens">
+      <div class="phone-wrap">
+        <div class="phone" style="min-height:200px">
+          <div class="notch"><span>9:41</span><div class="notch-center"></div><span>▌▌ 100%</span></div>
+          <div style="padding:10px">
+            <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px;border:1px solid var(--amber);display:flex;gap:8px">
+              <div style="font-size:20px">⚠️</div>
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--amber)">Low stock alert</div>
+                <div style="font-size:10px;color:var(--text2);margin-top:2px">realme Watch 3 has only 2 units left. Restock soon.</div>
+                <div style="font-size:9px;color:var(--text3);margin-top:4px">ElectroShop · Just now</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">Low-stock push notification</div>
+        <div class="phone-desc">Fired by notification.service.js (node-cron daily) or immediately after any stock decrement that crosses the threshold. Sent only to admin/staff with saved expoPushToken.</div>
+      </div>
+    </div>
+  </section>
+
+  <div style="margin-top:80px;padding-top:32px;border-top:1px solid var(--border);text-align:center;color:var(--text3);font-size:11px">
+    ElectroShop Wireframes · Built for Cursor AI frontend generation · Expo + React Native + Node/Express + MongoDB + AWS S3
+    <br>All prices and data are realistic samples for Indore electronics retail market.
+  </div>
+
+</main>
+
+<script>
+  const links = document.querySelectorAll('nav a');
+  const sections = document.querySelectorAll('section');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if(e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = document.querySelector(`nav a[href="#${e.target.id}"]`);
+        if(a) a.classList.add('active');
+      }
+    });
+  }, { threshold: 0.3 });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
