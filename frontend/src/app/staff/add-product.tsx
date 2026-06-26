@@ -28,6 +28,29 @@ const GST_RATES = [0, 5, 12, 18, 28];
 
 interface Spec { key: string; value: string }
 
+const Label = ({ text, required, colors }: { text: string; required?: boolean; colors: any }) => (
+  <Text style={[styles.label, { color: colors.text3 }]}>
+    {text}{required && " *"}
+  </Text>
+);
+
+const Field = ({ label, value, onChange, placeholder, keyboardType = "default", required = false, editable = true, colors }: {
+  label: string; value: string; onChange: (t: string) => void; placeholder?: string;
+  keyboardType?: "default" | "numeric" | "decimal-pad"; required?: boolean; editable?: boolean; colors: any;
+}) => (
+  <View style={styles.fieldGroup}>
+    <Label text={label} required={required} colors={colors} />
+    <TextInput
+      style={[styles.input, { color: editable ? colors.foreground : colors.text3, backgroundColor: colors.bg3, borderColor: colors.border }]}
+      value={value}
+      onChangeText={onChange}
+      placeholder={placeholder || label}
+      placeholderTextColor={colors.text3}
+      keyboardType={keyboardType}
+      editable={editable}
+    />
+  </View>
+);
 export default function AddProductScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -181,7 +204,7 @@ export default function AddProductScreen() {
         await apiPost("/products", payload);
       }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.canGoBack() ? router.canGoBack() ? router.back() : router.replace('/') : router.replace('/');
+      router.canGoBack() ? router.back() : router.replace('/');
     } catch (e: unknown) {
       Alert.alert("Error", e instanceof Error ? e.message : "Failed to save product.");
     } finally {
@@ -189,35 +212,14 @@ export default function AddProductScreen() {
     }
   };
 
-  const Label = ({ text, required }: { text: string; required?: boolean }) => (
-    <Text style={[styles.label, { color: colors.text3 }]}>
-      {text}{required && " *"}
-    </Text>
-  );
+// Moved outside
 
-  const Field = ({ label: lbl, value, onChange, placeholder, keyboardType = "default", required = false, editable = true }: {
-    label: string; value: string; onChange: (t: string) => void; placeholder?: string;
-    keyboardType?: "default" | "numeric" | "decimal-pad"; required?: boolean; editable?: boolean;
-  }) => (
-    <View style={styles.fieldGroup}>
-      <Label text={lbl} required={required} />
-      <TextInput
-        style={[styles.input, { color: editable ? colors.foreground : colors.text3, backgroundColor: colors.bg3, borderColor: colors.border }]}
-        value={value}
-        onChangeText={onChange}
-        placeholder={placeholder || lbl}
-        placeholderTextColor={colors.text3}
-        keyboardType={keyboardType}
-        editable={editable}
-      />
-    </View>
-  );
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <View style={[styles.root, { backgroundColor: colors.background, paddingTop: insets.top }]}>
         <View style={[styles.topBar, { borderBottomColor: colors.border }]}>
-          <Pressable onPress={() => router.canGoBack() ? router.canGoBack() ? router.back() : router.replace('/') : router.replace('/')} hitSlop={8}>
+          <Pressable onPress={() => router.canGoBack() ? router.back() : router.replace('/')} hitSlop={8}>
             <Ionicons name="arrow-back" size={22} color={colors.text2} />
           </Pressable>
           <Text style={[styles.topTitle, { color: colors.foreground }]}>{isEdit ? "Edit Product" : "Add Product"}</Text>
@@ -228,10 +230,10 @@ export default function AddProductScreen() {
 
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 16, gap: 14, paddingBottom: 40 }}>
           <Text style={[styles.section, { color: colors.primary }]}>Basic Info</Text>
-          <Field label="Product name" value={form.name} onChange={(v) => set("name", v)} required />
-          <Field label="Brand" value={form.brand} onChange={(v) => set("brand", v)} required />
+          <Field label="Product name" value={form.name} onChange={(v) => set("name", v)} required colors={colors} />
+          <Field label="Brand" value={form.brand} onChange={(v) => set("brand", v)} required colors={colors} />
           <View style={styles.fieldGroup}>
-            <Label text="Category" required />
+            <Label text="Category" required colors={colors} />
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.catRow}>
               {CATEGORIES.map((c) => (
                 <Pressable key={c} style={[styles.catChip, { backgroundColor: form.category === c ? colors.primary : colors.bg3, borderColor: form.category === c ? colors.primary : colors.border2 }]} onPress={() => set("category", c)}>
@@ -258,12 +260,12 @@ export default function AddProductScreen() {
           </ScrollView>
 
           <Text style={[styles.section, { color: colors.primary }]}>Pricing</Text>
-          <Field label="Selling price" value={form.sellingPrice} onChange={(v) => set("sellingPrice", v)} keyboardType="decimal-pad" required />
-          <Field label="MRP (optional)" value={form.mrp} onChange={(v) => set("mrp", v)} keyboardType="decimal-pad" />
-          {isAdmin && <Field label="Cost price (admin only)" value={form.costPrice} onChange={(v) => set("costPrice", v)} keyboardType="decimal-pad" />}
+          <Field label="Selling price" value={form.sellingPrice} onChange={(v) => set("sellingPrice", v)} keyboardType="decimal-pad" required colors={colors} />
+          <Field label="MRP (optional)" value={form.mrp} onChange={(v) => set("mrp", v)} keyboardType="decimal-pad" colors={colors} />
+          {isAdmin && <Field label="Cost price (admin only)" value={form.costPrice} onChange={(v) => set("costPrice", v)} keyboardType="decimal-pad" colors={colors} />}
 
           <View style={styles.fieldGroup}>
-            <Label text="GST %" />
+            <Label text="GST %" colors={colors} />
             <View style={styles.gstRow}>
               {GST_RATES.map((r) => (
                 <Pressable key={r} style={[styles.gstBtn, { backgroundColor: form.gstPercent === String(r) ? colors.primary : colors.bg3, borderColor: form.gstPercent === String(r) ? colors.primary : colors.border2 }]} onPress={() => set("gstPercent", String(r))}>
@@ -272,19 +274,19 @@ export default function AddProductScreen() {
               ))}
             </View>
           </View>
-          <Field label="HSN Code" value={form.hsnCode} onChange={(v) => set("hsnCode", v)} />
+          <Field label="HSN Code" value={form.hsnCode} onChange={(v) => set("hsnCode", v)} colors={colors} />
 
           <Text style={[styles.section, { color: colors.primary }]}>Inventory</Text>
           <View style={styles.row2}>
             <View style={{ flex: 1 }}>
-              <Field label="Stock qty" value={form.stock} onChange={(v) => set("stock", v)} keyboardType="numeric" />
+              <Field label="Stock qty" value={form.stock} onChange={(v) => set("stock", v)} keyboardType="numeric" colors={colors} />
             </View>
             <View style={{ flex: 1 }}>
-              <Field label="Low stock alert" value={form.lowStockThreshold} onChange={(v) => set("lowStockThreshold", v)} keyboardType="numeric" />
+              <Field label="Low stock alert" value={form.lowStockThreshold} onChange={(v) => set("lowStockThreshold", v)} keyboardType="numeric" colors={colors} />
             </View>
           </View>
           <View style={styles.fieldGroup}>
-            <Label text="Barcode" />
+            <Label text="Barcode" colors={colors} />
             <View style={styles.barcodeRow}>
               <TextInput
                 style={[styles.input, { flex: 1, color: colors.foreground, backgroundColor: colors.bg3, borderColor: colors.border }]}
@@ -304,7 +306,7 @@ export default function AddProductScreen() {
               </Pressable>
             </View>
           </View>
-          <Field label="Internal code / SKU" value={form.internalCode} onChange={(v) => set("internalCode", v)} />
+          <Field label="Internal code / SKU" value={form.internalCode} onChange={(v) => set("internalCode", v)} colors={colors} />
 
           <Text style={[styles.section, { color: colors.primary }]}>Specifications</Text>
           {specs.map((s, i) => (

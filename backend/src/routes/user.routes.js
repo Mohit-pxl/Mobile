@@ -5,10 +5,26 @@ const {
   listStaff,
   updateUserRole,
   deactivateUser,
+  listUsers,
+  createUser,
+  updateUser,
+  deleteUser,
 } = require('../controllers/user.controller');
 
 // All user management routes require admin role
 router.use(authenticate, requireRole(['admin']));
+
+// GET /api/users — List all users
+router.get('/', listUsers);
+
+// POST /api/users — Create a user
+router.post('/', createUser);
+
+// PATCH /api/users/:id — Update a user
+router.patch('/:id', updateUser);
+
+// DELETE /api/users/:id — Delete a user
+router.delete('/:id', deleteUser);
 
 /**
  * @swagger

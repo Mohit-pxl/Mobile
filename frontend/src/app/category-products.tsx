@@ -121,7 +121,7 @@ export default function CategoryProductsScreen() {
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 6, borderBottomColor: colors.border, backgroundColor: colors.bg2 }]}>
-        <Pressable onPress={() => router.canGoBack() ? router.canGoBack() ? router.back() : router.replace('/') : router.replace('/')} hitSlop={10} style={styles.backBtn}>
+        <Pressable onPress={() => router.canGoBack() ? router.back() : router.replace('/')} hitSlop={10} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.text2} />
         </Pressable>
         <View style={styles.headerCenter}>

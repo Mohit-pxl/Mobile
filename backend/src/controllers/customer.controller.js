@@ -142,9 +142,32 @@ const addPayment = [
   }
 ];
 
+/**
+ * DELETE /api/customers/:id
+ * Delete a customer.
+ */
+const deleteCustomer = [
+  param('id').isMongoId().withMessage('Invalid customer ID'),
+
+  async (req, res, next) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) return errorResponse(res, 'Validation failed.', 400, errors.array());
+
+      const customer = await Customer.findByIdAndDelete(req.params.id);
+      if (!customer) return errorResponse(res, 'Customer not found.', 404);
+
+      return successResponse(res, { message: 'Customer deleted successfully' }, 200);
+    } catch (error) {
+      next(error);
+    }
+  }
+];
+
 module.exports = {
   listCustomers,
   createCustomer,
   getCustomer,
   addPayment,
+  deleteCustomer,
 };

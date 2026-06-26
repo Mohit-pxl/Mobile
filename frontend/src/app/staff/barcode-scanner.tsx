@@ -45,7 +45,7 @@ export default function BarcodeScannerScreen() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
     if (isRawMode) {
-      router.canGoBack() ? router.canGoBack() ? router.back() : router.replace('/') : router.replace('/');
+      router.canGoBack() ? router.back() : router.replace('/');
       router.setParams({ scannedBarcode: data });
       return;
     }
@@ -54,7 +54,7 @@ export default function BarcodeScannerScreen() {
     try {
       const res = await apiGet<Product>(`/products/barcode/${encodeURIComponent(data)}`);
       const product = res.data;
-      router.canGoBack() ? router.canGoBack() ? router.back() : router.replace('/') : router.replace('/');
+      router.canGoBack() ? router.back() : router.replace('/');
       router.setParams({ scannedProductId: product._id, scannedProductName: product.name });
     } catch {
       setError(`No product found for barcode "${data}"`);
@@ -79,7 +79,7 @@ export default function BarcodeScannerScreen() {
     return (
       <View style={[styles.center, { backgroundColor: colors.background }]}>
         <View style={[styles.topBar, { paddingTop: insets.top + 4 }]}>
-          <Pressable onPress={() => router.canGoBack() ? router.canGoBack() ? router.back() : router.replace('/') : router.replace('/')} style={styles.closeBtn}>
+          <Pressable onPress={() => router.canGoBack() ? router.back() : router.replace('/')} style={styles.closeBtn}>
             <Ionicons name="close" size={22} color="#fff" />
           </Pressable>
         </View>
@@ -92,7 +92,7 @@ export default function BarcodeScannerScreen() {
         </Text>
         <Pressable
           style={[styles.backBtn, { backgroundColor: colors.primary }]}
-          onPress={() => router.canGoBack() ? router.canGoBack() ? router.back() : router.replace('/') : router.replace('/')}
+          onPress={() => router.canGoBack() ? router.back() : router.replace('/')}
         >
           <Text style={{ color: "#000", fontWeight: "700", fontFamily: "Inter_700Bold" }}>
             Go back
@@ -126,7 +126,7 @@ export default function BarcodeScannerScreen() {
             Allow camera access
           </Text>
         </Pressable>
-        <Pressable onPress={() => router.canGoBack() ? router.canGoBack() ? router.back() : router.replace('/') : router.replace('/')} style={{ marginTop: 12 }}>
+        <Pressable onPress={() => router.canGoBack() ? router.back() : router.replace('/')} style={{ marginTop: 12 }}>
           <Text style={{ color: colors.text3, fontFamily: "Inter_400Regular", fontSize: 13 }}>
             Cancel
           </Text>
@@ -160,7 +160,7 @@ export default function BarcodeScannerScreen() {
 
       <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
         <Pressable
-          onPress={() => router.canGoBack() ? router.canGoBack() ? router.back() : router.replace('/') : router.replace('/')}
+          onPress={() => router.canGoBack() ? router.back() : router.replace('/')}
           style={[styles.circleBtn, { backgroundColor: "rgba(0,0,0,0.5)" }]}
           hitSlop={8}
         >

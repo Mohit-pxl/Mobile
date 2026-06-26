@@ -41,7 +41,7 @@ export default function StockMovementsScreen() {
 
   const addMutation = useMutation({
     mutationFn: async () => {
-      await apiPost("/stock/movements", { productId, type, qty: Number(qty), note: note || undefined });
+      await apiPost("/stock/movement", { productId, type, qty: Number(qty), note: note || undefined });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["stock-movements", productId] });

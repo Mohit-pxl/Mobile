@@ -9,6 +9,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
+import { View, ActivityIndicator } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -30,18 +31,28 @@ function AuthGuard() {
   const router = useRouter();
 
   useEffect(() => {
+    console.log("AuthGuard:", { isLoading, inAuth: segments[0] === "(auth)", segments, user, isGuest });
     if (isLoading) return;
     const inAuth = segments[0] === "(auth)";
     const inStaff = segments[0] === "(staff)" || segments[0] === "staff";
     const inCustomer = segments[0] === "(tabs)";
 
     if (!user && !isGuest) {
-      if (!inAuth) router.replace("/(auth)/login");
+      if (!inAuth) {
+        console.log("Redirecting to /(auth)");
+        router.replace("/(auth)");
+      }
     } else if (user?.role === "staff" || user?.role === "admin") {
-      if (inAuth || inCustomer) router.replace("/(staff)");
+      if (inAuth || inCustomer) {
+        console.log("Redirecting to /(staff)");
+        router.replace("/(staff)");
+      }
     } else {
       // logged-in customer OR guest — both allowed in (tabs)
-      if (inAuth || inStaff) router.replace("/(tabs)");
+      if (inAuth || inStaff) {
+        console.log("Redirecting to /(tabs)");
+        router.replace("/(tabs)");
+      }
     }
   }, [user, isGuest, isLoading, segments]);
 
@@ -104,13 +115,14 @@ export default function RootLayout() {
     if (fontsLoaded || fontError) SplashScreen.hideAsync();
   }, [fontsLoaded, fontError]);
 
-  if (!fontsLoaded && !fontError) return null;
+  // We removed the blocking return so the app always renders, 
+  // relying on system fonts if Google Fonts fail to load quickly.
 
   return (
     <SafeAreaProvider>
-      <ErrorBoundary>
-        <QueryClientProvider client={queryClient}>
-          <ThemeProvider>
+      <ThemeProvider>
+        <ErrorBoundary>
+          <QueryClientProvider client={queryClient}>
             <AuthProvider>
               <WishlistProvider>
                 <CartProvider>
@@ -122,9 +134,9 @@ export default function RootLayout() {
                 </CartProvider>
               </WishlistProvider>
             </AuthProvider>
-          </ThemeProvider>
-        </QueryClientProvider>
-      </ErrorBoundary>
+          </QueryClientProvider>
+        </ErrorBoundary>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }

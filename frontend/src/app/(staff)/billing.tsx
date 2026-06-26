@@ -136,7 +136,7 @@ export default function BillingScreen() {
         router.replace(`/staff/quotation/${res.data._id}`);
       } else {
         const res = await apiPost<{ _id: string }>("/billing/invoices", {
-          items: items.map((i) => ({ productId: i.product._id, qty: i.qty, price: i.product.sellingPrice })),
+          items: items.map((i) => ({ product: { _id: i.product._id }, qty: i.qty, price: i.product.sellingPrice })),
           paymentMode: paymentStatus === "unpaid" ? "credit" : paymentMode,
           paymentStatus,
           ...(customer ? { customerId: customer._id } : {}),

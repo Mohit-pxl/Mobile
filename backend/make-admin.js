@@ -9,7 +9,8 @@ if (!email) {
   process.exit(1);
 }
 
-mongoose.connect('mongodb://localhost:27017/goldy-mobiles', { useNewUrlParser: true, useUnifiedTopology: true })
+require('dotenv').config();
+mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/goldy-mobiles', { useNewUrlParser: true, useUnifiedTopology: true })
   .then(async () => {
     const user = await User.findOneAndUpdate(
       { email }, 

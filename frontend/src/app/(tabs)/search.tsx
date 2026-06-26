@@ -61,7 +61,7 @@ export default function SearchScreen() {
   return (
     <View style={[styles.root, { backgroundColor: colors.background, paddingTop: insets.top + 12 }]}>
       <View style={styles.topBar}>
-        <Pressable onPress={() => router.canGoBack() ? router.canGoBack() ? router.back() : router.replace('/') : router.replace('/')} hitSlop={8}>
+        <Pressable onPress={() => router.canGoBack() ? router.back() : router.replace('/')} hitSlop={8}>
           <Ionicons name="arrow-back" size={22} color={colors.text2} />
         </Pressable>
         <View style={[styles.searchBox, { backgroundColor: colors.bg3, borderColor: query ? colors.primary : colors.border }]}>

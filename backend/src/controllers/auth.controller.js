@@ -5,6 +5,7 @@ const OTP = require('../models/OTP');
 const { generateToken } = require('../utils/generateToken');
 const { generateOTPCode, sendOTPEmail } = require('../utils/email');
 const { successResponse, errorResponse } = require('../utils/apiResponse');
+const logger = require('../utils/logger');
 
 // ── Rate limiting constants ───────────────────────────────────────────────────
 const OTP_EXPIRY_MINUTES = 10;
@@ -48,10 +49,12 @@ const sendOTP = [
       const code = generateOTPCode();
       const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
 
-      // FOR LOCAL TESTING: Print the code to the console
-      console.log(`\n===========================================`);
-      console.log(`[DEVELOPMENT] OTP for ${email}: ${code}`);
-      console.log(`===========================================\n`);
+      // FOR LOCAL TESTING: Print the code to the logger
+      logger.info(`===========================================`);
+      logger.info(`[DEVELOPMENT/OTP] OTP for ${email}: ${code}`);
+      logger.info(`===========================================`);
+      console.log(logger.info(`[DEVELOPMENT/OTP] OTP for ${email}: ${code}`));
+      console.log(logger.info(`===========================================`));
 
       await OTP.create({ email, code, expiresAt });
 
@@ -65,8 +68,8 @@ const sendOTP = [
       try {
         await sendOTPEmail(email, code);
       } catch (emailErr) {
-        console.error('Failed to send OTP email via SMTP:', emailErr.message);
-        console.log('You can still use the code printed above to log in.');
+        logger.error(`Failed to send OTP email via SMTP: ${emailErr.message}`);
+        logger.info('You can still use the code printed above to log in.');
 
         if (process.env.NODE_ENV === 'production') {
           await OTP.deleteMany({ email });
