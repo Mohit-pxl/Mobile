@@ -206,3 +206,9 @@ export interface ProfitLossReport {
   expenses: number;
   netProfit: number;
 }
+
+export interface Banner {
+  _id: string;
+  imageUrl: string;
+  createdAt: string;
+}

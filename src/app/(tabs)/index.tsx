@@ -2,9 +2,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
-  Appearance,
   FlatList,
   Pressable,
   RefreshControl,
@@ -12,7 +11,6 @@ import {
   StyleSheet,
   Text,
   View,
-  useColorScheme,
   useWindowDimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,7 +20,7 @@ import ProductCard from "@/components/ProductCard";
 import { SkeletonRow } from "@/components/Skeleton";
 import { useWishlist } from "@/context/WishlistContext";
 import { useColors } from "@/hooks/useColors";
-import { apiGet, Product } from "@/services/api";
+import { apiGet, Product, Banner } from "@/services/api";
 import { useQuery } from "@tanstack/react-query";
 
 const CATEGORIES = ["All", "Mobiles", "Audio", "Earphones", "Chargers", "Smart Watches", "Laptops"];
@@ -31,13 +29,8 @@ export default function CustomerHomeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const scheme = useColorScheme();
   const { toggle, isWishlisted } = useWishlist();
   const [activeCategory, setActiveCategory] = useState("All");
-
-  const toggleTheme = () => {
-    Appearance.setColorScheme(scheme === 'dark' ? 'light' : 'dark');
-  };
 
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
@@ -56,6 +49,31 @@ export default function CustomerHomeScreen() {
     },
   });
 
+  const { data: banners = [] } = useQuery({
+    queryKey: ["banners"],
+    queryFn: async () => {
+      const res = await apiGet<Banner[]>("/banners");
+      return res.data;
+    },
+  });
+
+  const flatListRef = useRef<FlatList>(null);
+  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+
+  useEffect(() => {
+    if (banners.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentBannerIndex((prev) => {
+        const next = (prev + 1) % banners.length;
+        flatListRef.current?.scrollToIndex({ index: next, animated: true });
+        return next;
+      });
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [banners.length]);
+
+  const bannerWidth = width; // We will use full width minus margins inside the item
+
   const products = data || [];
   const featured = products.slice(0, 6);
 
@@ -63,7 +81,7 @@ export default function CustomerHomeScreen() {
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { paddingTop: insets.top + 12, backgroundColor: colors.bg2, borderBottomColor: colors.border }]}>
         <View style={styles.headerLeft}>
-          <Ionicons name="flash" size={22} color={colors.primary} />
+          <Image source={require('../../../assets/logo.png')} style={{ width: 24, height: 24 }} contentFit="contain" />
           <Text style={[styles.logoText, { color: colors.foreground }]}>Goldy Mobiles</Text>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
@@ -74,9 +92,6 @@ export default function CustomerHomeScreen() {
             <Ionicons name="notifications-outline" size={22} color={colors.text2} />
             <View style={{ position: 'absolute', top: -2, right: -2, width: 8, height: 8, borderRadius: 4, backgroundColor: colors.destructive }} />
           </Pressable>
-          <Pressable onPress={toggleTheme} hitSlop={8}>
-            <Ionicons name={scheme === 'dark' ? "sunny-outline" : "moon-outline"} size={22} color={colors.text2} />
-          </Pressable>
         </View>
       </View>
 
@@ -85,19 +100,41 @@ export default function CustomerHomeScreen() {
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />}
         contentContainerStyle={{ paddingBottom: insets.bottom + 90 }}
       >
-        <LinearGradient colors={["#2a1a00", "#1a1a1a"]} style={styles.banner}>
-          <View>
-            <Text style={[styles.bannerSub, { color: colors.primary }]}>Goldy Mobiles</Text>
-            <Text style={[styles.bannerTitle, { color: colors.foreground }]}>{"Premium\nElectronics"}</Text>
-            <Pressable
-              style={[styles.bannerBtn, { backgroundColor: colors.primary }]}
-              onPress={() => router.push("/(tabs)/browse")}
-            >
-              <Text style={{ fontFamily: "Inter_700Bold", fontSize: 12, color: "#000" }}>Shop Now</Text>
-            </Pressable>
+        {banners.length > 0 ? (
+          <View style={{ marginVertical: 16 }}>
+            <FlatList
+              ref={flatListRef}
+              data={banners}
+              keyExtractor={(item) => item._id}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              scrollEnabled={banners.length > 1}
+              getItemLayout={(_, index) => ({ length: bannerWidth, offset: bannerWidth * index, index })}
+              renderItem={({ item }) => (
+                <View style={{ width: bannerWidth, paddingHorizontal: 16 }}>
+                  <View style={{ width: "100%", height: 160, borderRadius: 14, overflow: "hidden" }}>
+                    <Image source={{ uri: item.imageUrl }} style={{ width: "100%", height: "100%" }} contentFit="cover" />
+                  </View>
+                </View>
+              )}
+            />
           </View>
-          <Ionicons name="phone-portrait" size={72} color={colors.primary} style={{ opacity: 0.3 }} />
-        </LinearGradient>
+        ) : (
+          <LinearGradient colors={["#2a1a00", "#1a1a1a"]} style={styles.banner}>
+            <View>
+              <Text style={[styles.bannerSub, { color: colors.primary }]}>Goldy Mobiles</Text>
+              <Text style={[styles.bannerTitle, { color: colors.foreground }]}>{"Premium\nElectronics"}</Text>
+              <Pressable
+                style={[styles.bannerBtn, { backgroundColor: colors.primary }]}
+                onPress={() => router.push("/(tabs)/browse")}
+              >
+                <Text style={{ fontFamily: "Inter_700Bold", fontSize: 12, color: "#000" }}>Shop Now</Text>
+              </Pressable>
+            </View>
+            <Ionicons name="phone-portrait" size={72} color={colors.primary} style={{ opacity: 0.3 }} />
+          </LinearGradient>
+        )}
 
         <ScrollView
           horizontal

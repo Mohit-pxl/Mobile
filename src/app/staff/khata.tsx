@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Alert, FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, FlatList, Platform, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import EmptyState from "@/components/EmptyState";
@@ -52,31 +52,39 @@ export default function KhataScreen() {
     }
   };
 
-  const deleteSelected = () => {
+  const executeDelete = async () => {
+    try {
+      for (const id of Array.from(selected)) {
+        await apiDelete(`/customers/${id}`);
+      }
+      refetch();
+      setSelected(new Set());
+      setIsSelectMode(false);
+    } catch (error) {
+      Alert.alert("Error", "Failed to delete customers");
+    }
+  };
+
+  const deleteSelected = async () => {
     if (selected.size === 0) return;
-    Alert.alert(
-      "Delete Customers",
-      `Are you sure you want to delete ${selected.size} customer(s)? This action cannot be undone.`,
-      [
-        { text: "Cancel", style: "cancel" },
-        { 
-          text: "Delete", 
-          style: "destructive", 
-          onPress: async () => {
-            try {
-              for (const id of Array.from(selected)) {
-                await apiDelete(`/customers/${id}`);
-              }
-              refetch();
-              setSelected(new Set());
-              setIsSelectMode(false);
-            } catch (error) {
-              Alert.alert("Error", "Failed to delete customers");
-            }
+    if (Platform.OS === 'web') {
+      if (window.confirm(`Are you sure you want to delete ${selected.size} customer(s)? This action cannot be undone.`)) {
+        await executeDelete();
+      }
+    } else {
+      Alert.alert(
+        "Delete Customers",
+        `Are you sure you want to delete ${selected.size} customer(s)? This action cannot be undone.`,
+        [
+          { text: "Cancel", style: "cancel" },
+          { 
+            text: "Delete", 
+            style: "destructive", 
+            onPress: executeDelete
           }
-        }
-      ]
-    );
+        ]
+      );
+    }
   };
 
   const fmt = (n: number) => `₹${n.toLocaleString("en-IN")}`;

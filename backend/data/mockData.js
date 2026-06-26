@@ -452,6 +452,14 @@ const staff = [
   }
 ];
 
+const users = [
+  { _id: 'u1', name: 'Admin User', email: 'admin@example.com', phone: '+91 9876543210', role: 'admin', createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString() },
+  { _id: 'u2', name: 'Staff Member 1', email: 'staff1@example.com', phone: '+91 9876543211', role: 'staff', createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString() },
+  { _id: 'u3', name: 'Staff Member 2', email: 'staff2@example.com', phone: '+91 9876543212', role: 'staff', createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() },
+  { _id: 'u4', name: 'Customer User 1', email: 'customer1@example.com', phone: '+91 9876543213', role: 'customer', createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
+  { _id: 'u5', name: 'Customer User 2', email: 'customer2@example.com', phone: '+91 9876543214', role: 'customer', createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() }
+];
+
 const invoices = [
   {
     _id: "inv1",
@@ -487,17 +495,25 @@ const expenses = [];
 const stockMovements = [];
 const inquiries = [];
 const wishlist = [];
+const banners = [];
+
+const settings = {
+  whatsappNumber: "+917987522364"
+};
 
 module.exports = {
   categories,
   products,
   customers,
   staff,
+  users,
   invoices,
   quotations,
   expenses,
   stockMovements,
   inquiries,
-  wishlist
+  wishlist,
+  banners,
+  settings
 };
 

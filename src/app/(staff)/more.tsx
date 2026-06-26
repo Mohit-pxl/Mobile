@@ -5,6 +5,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 import { useColors } from "@/hooks/useColors";
 import SignOutModal from "@/components/SignOutModal";
 
@@ -13,6 +14,7 @@ export default function MoreScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [showSignOut, setShowSignOut] = React.useState(false);
 
   const isAdmin = user?.role === "admin";
@@ -86,10 +88,22 @@ export default function MoreScreen() {
           <>
             <Text style={[styles.sectionLabel, { color: colors.text3 }]}>Admin</Text>
             <View style={[styles.section, { borderTopColor: colors.border, borderBottomColor: colors.border }]}>
+              <MenuItem icon="images-outline" label="Manage Banners" subtitle="Home page sliders" onPress={() => router.push("/staff/banners")} color={colors.primary} />
               <MenuItem icon="people-circle-outline" label="Staff Management" subtitle="Roles and permissions" onPress={() => router.push("/staff/staff-mgmt")} color={colors.redText} />
+              <MenuItem icon="people" label="User Management" subtitle="Manage all users" onPress={() => router.push("/staff/users-mgmt")} color={colors.primary} />
             </View>
           </>
         )}
+
+        <Text style={[styles.sectionLabel, { color: colors.text3 }]}>Settings</Text>
+        <View style={[styles.section, { borderTopColor: colors.border, borderBottomColor: colors.border }]}>
+          <MenuItem 
+            icon={theme === "light" ? "moon-outline" : "sunny-outline"} 
+            label={theme === "light" ? "Switch to Dark Theme" : "Switch to Light Theme"} 
+            subtitle="Change app appearance"
+            onPress={toggleTheme} 
+          />
+        </View>
 
         <View style={[styles.section, { borderTopColor: colors.border, borderBottomColor: colors.border, marginTop: 16 }]}>
           <MenuItem icon="log-out-outline" label="Sign out" onPress={() => setShowSignOut(true)} color={colors.destructive} />
