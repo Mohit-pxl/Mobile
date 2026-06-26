@@ -156,6 +156,7 @@ export interface Expense {
   category: string;
   date: string;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface StockMovement {
@@ -193,6 +194,9 @@ export interface SalesReport {
   totalOrders: number;
   avgOrderValue: number;
   topPaymentMode: string;
+  grossProfit?: number;
+  expenses?: number;
+  netProfit?: number;
 }
 
 export interface ProfitLossReport {
@@ -201,4 +205,10 @@ export interface ProfitLossReport {
   grossProfit: number;
   expenses: number;
   netProfit: number;
+}
+
+export interface Banner {
+  _id: string;
+  imageUrl: string;
+  createdAt: string;
 }

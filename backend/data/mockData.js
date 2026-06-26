@@ -391,6 +391,48 @@ const customers = [
     phone: "9876543210",
     email: "john@example.com",
     totalDue: 1500
+  },
+  {
+    _id: "c2",
+    name: "Jane Smith",
+    phone: "9988776655",
+    email: "jane@example.com",
+    totalDue: 0
+  },
+  {
+    _id: "c3",
+    name: "Rahul Kumar",
+    phone: "9876123450",
+    email: "rahul@example.com",
+    totalDue: 500
+  },
+  {
+    _id: "c4",
+    name: "Priya Sharma",
+    phone: "9123456789",
+    email: "priya@example.com",
+    totalDue: 0
+  },
+  {
+    _id: "c5",
+    name: "Amit Patel",
+    phone: "9988223344",
+    email: "amit@example.com",
+    totalDue: 2300
+  },
+  {
+    _id: "c6",
+    name: "Sneha Reddy",
+    phone: "9112233445",
+    email: "sneha@example.com",
+    totalDue: 0
+  },
+  {
+    _id: "c7",
+    name: "Vikram Singh",
+    phone: "9887766554",
+    email: "vikram@example.com",
+    totalDue: 0
   }
 ];
 
@@ -408,6 +450,14 @@ const staff = [
       canManageStaff: true,
     }
   }
+];
+
+const users = [
+  { _id: 'u1', name: 'Admin User', email: 'admin@example.com', phone: '+91 9876543210', role: 'admin', createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString() },
+  { _id: 'u2', name: 'Staff Member 1', email: 'staff1@example.com', phone: '+91 9876543211', role: 'staff', createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString() },
+  { _id: 'u3', name: 'Staff Member 2', email: 'staff2@example.com', phone: '+91 9876543212', role: 'staff', createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() },
+  { _id: 'u4', name: 'Customer User 1', email: 'customer1@example.com', phone: '+91 9876543213', role: 'customer', createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
+  { _id: 'u5', name: 'Customer User 2', email: 'customer2@example.com', phone: '+91 9876543214', role: 'customer', createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() }
 ];
 
 const invoices = [
@@ -445,17 +495,25 @@ const expenses = [];
 const stockMovements = [];
 const inquiries = [];
 const wishlist = [];
+const banners = [];
+
+const settings = {
+  whatsappNumber: "+917987522364"
+};
 
 module.exports = {
   categories,
   products,
   customers,
   staff,
+  users,
   invoices,
   quotations,
   expenses,
   stockMovements,
   inquiries,
-  wishlist
+  wishlist,
+  banners,
+  settings
 };
 

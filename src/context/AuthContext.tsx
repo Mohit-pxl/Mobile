@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 import { apiPost, User } from "@/services/api";
+import { useTheme } from "@/context/ThemeContext";
 
 interface AuthContextType {
   user: User | null;
@@ -22,6 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isGuest, setIsGuest] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const { resetTheme } = useTheme();
 
   const loadUser = useCallback(async () => {
     try {
@@ -60,7 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const mockUser: User = {
       _id: `dev-${role}`,
       name: role === "admin" ? "Dev Admin" : role === "staff" ? "Dev Staff" : "Dev Customer",
-      email: `dev-${role}@electroshop.local`,
+      email: `dev-${role}@goldymobiles.local`,
       role,
       permissions: {
         canViewCostPrice: role !== "customer",
@@ -79,8 +81,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await AsyncStorage.multiRemove(["auth_token", "auth_user"]);
     setUser(null);
     setIsGuest(false);
-    router.replace("/(auth)/login");
-  }, []);
+    await resetTheme();
+    router.replace("/(auth)");
+  }, [resetTheme]);
 
   const refreshUser = useCallback(async () => {
     const stored = await AsyncStorage.getItem("auth_user");

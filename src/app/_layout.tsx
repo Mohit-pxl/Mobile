@@ -15,8 +15,10 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
+import { useColors } from "@/hooks/useColors";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -47,15 +49,17 @@ function AuthGuard() {
 }
 
 function RootLayoutNav() {
+  const colors = useColors();
+
   return (
     <>
       <AuthGuard />
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: "#0f0f0f" },
-          headerTintColor: "#f0f0f0",
+          headerStyle: { backgroundColor: colors.background },
+          headerTintColor: colors.foreground,
           headerTitleStyle: { fontFamily: "Inter_600SemiBold", fontSize: 16 },
-          contentStyle: { backgroundColor: "#0f0f0f" },
+          contentStyle: { backgroundColor: colors.background },
         }}
       >
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
@@ -73,6 +77,8 @@ function RootLayoutNav() {
         <Stack.Screen name="staff/expenses" options={{ title: "Expenses", headerShown: false }} />
         <Stack.Screen name="staff/reports" options={{ title: "Reports", headerShown: false }} />
         <Stack.Screen name="staff/staff-mgmt" options={{ title: "Staff Management", headerShown: false }} />
+        <Stack.Screen name="staff/users-mgmt" options={{ title: "User Management", headerShown: false }} />
+        <Stack.Screen name="staff/banners" options={{ title: "Manage Banners", headerShown: false }} />
         <Stack.Screen
           name="staff/barcode-scanner"
           options={{
@@ -104,17 +110,19 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <WishlistProvider>
-              <CartProvider>
-                <GestureHandlerRootView style={{ flex: 1 }}>
-                  <KeyboardProvider>
-                    <RootLayoutNav />
-                  </KeyboardProvider>
-                </GestureHandlerRootView>
-              </CartProvider>
-            </WishlistProvider>
-          </AuthProvider>
+          <ThemeProvider>
+            <AuthProvider>
+              <WishlistProvider>
+                <CartProvider>
+                  <GestureHandlerRootView style={{ flex: 1 }}>
+                    <KeyboardProvider>
+                      <RootLayoutNav />
+                    </KeyboardProvider>
+                  </GestureHandlerRootView>
+                </CartProvider>
+              </WishlistProvider>
+            </AuthProvider>
+          </ThemeProvider>
         </QueryClientProvider>
       </ErrorBoundary>
     </SafeAreaProvider>

@@ -100,9 +100,15 @@ export default function AdminScreen() {
           <Text style={[styles.title, { color: colors.foreground }]}>Admin Panel</Text>
           <Text style={[styles.sub, { color: colors.text3 }]}>Goldy Mobiles · Full access</Text>
         </View>
-        <View style={[styles.adminBadge, { backgroundColor: colors.redBg, borderColor: colors.redText + "44" }]}>
-          <Ionicons name="shield-checkmark" size={12} color={colors.redText} />
-          <Text style={[styles.adminBadgeText, { color: colors.redText }]}>ADMIN</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <View style={[styles.adminBadge, { backgroundColor: colors.redBg, borderColor: colors.redText + "44" }]}>
+            <Ionicons name="shield-checkmark" size={12} color={colors.redText} />
+            <Text style={[styles.adminBadgeText, { color: colors.redText }]}>ADMIN</Text>
+          </View>
+          <Pressable onPress={() => router.push("/staff/notifications")} style={{ position: 'relative', padding: 4 }}>
+            <Ionicons name="notifications-outline" size={22} color={colors.text2} />
+            <View style={{ position: 'absolute', top: 2, right: 4, width: 8, height: 8, borderRadius: 4, backgroundColor: colors.destructive }} />
+          </Pressable>
         </View>
       </View>
 
@@ -162,6 +168,7 @@ export default function AdminScreen() {
           {[
             { icon: "bar-chart-outline", label: "Reports", path: "/staff/reports" as const },
             { icon: "people-circle-outline", label: "Staff Mgmt", path: "/staff/staff-mgmt" as const },
+            { icon: "person-add-outline", label: "Users Mgmt", path: "/staff/users-mgmt" as const },
             { icon: "wallet-outline", label: "Expenses", path: "/staff/expenses" as const },
             { icon: "document-text-outline", label: "Quotations", path: "/staff/quotations" as const },
             { icon: "people-outline", label: "Khata", path: "/staff/khata" as const },

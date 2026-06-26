@@ -1,15 +1,15 @@
 {
   "expo": {
-    "name": "ElectroShop Mobile",
+    "name": "Goldy Mobiles",
     "slug": "mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/logo.png",
     "scheme": "mobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/splash.png",
+      "image": "./assets/logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#0f0f0f"
     },
@@ -18,7 +18,7 @@
     },
     "android": {},
     "web": {
-      "favicon": "./assets/images/icon.png"
+      "favicon": "./assets/logo.png"
     },
     "plugins": [
       [
@@ -32,9 +32,10 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow ElectroShop to access your camera to scan product barcodes."
+          "cameraPermission": "Allow Goldy Mobiles to access your camera to scan product barcodes."
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true,

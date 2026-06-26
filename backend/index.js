@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
@@ -5,7 +6,8 @@ const mockData = require('./data/mockData');
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // --- Auth Routes ---
 app.post('/api/auth/send-otp', (req, res) => {
@@ -78,6 +80,33 @@ app.get('/api/catalog/categories', (req, res) => {
   res.json({ success: true, data: mockData.categories });
 });
 
+// --- Banners ---
+app.get('/api/banners', (req, res) => {
+  res.json({ success: true, data: mockData.banners || [] });
+});
+
+app.post('/api/banners', (req, res) => {
+  const newBanner = { _id: uuidv4(), ...req.body, createdAt: new Date().toISOString() };
+  if (!mockData.banners) mockData.banners = [];
+  mockData.banners.push(newBanner);
+  res.json({ success: true, data: newBanner });
+});
+
+app.delete('/api/banners/:id', (req, res) => {
+  const index = (mockData.banners || []).findIndex(b => b._id === req.params.id);
+  if (index !== -1) {
+    mockData.banners.splice(index, 1);
+    res.json({ success: true, message: "Banner deleted" });
+  } else {
+    res.status(404).json({ success: false, message: "Banner not found" });
+  }
+});
+
+// --- Settings ---
+app.get('/api/settings', (req, res) => {
+  res.json({ success: true, data: mockData.settings || {} });
+});
+
 // --- Product Management Routes (Staff App) ---
 app.get('/api/products', (req, res) => {
   let filtered = mockData.products;
@@ -143,6 +172,16 @@ app.post('/api/customers', (req, res) => {
   const newCustomer = { _id: uuidv4(), ...req.body, totalDue: 0 };
   mockData.customers.push(newCustomer);
   res.json({ success: true, data: newCustomer });
+});
+
+app.delete('/api/customers/:id', (req, res) => {
+  const index = mockData.customers.findIndex(c => c._id === req.params.id);
+  if (index !== -1) {
+    mockData.customers.splice(index, 1);
+    res.json({ success: true, message: "Customer deleted" });
+  } else {
+    res.status(404).json({ success: false, message: "Customer not found" });
+  }
 });
 
 app.post('/api/customers/:id/payments', (req, res) => {
@@ -361,30 +400,95 @@ app.patch('/api/staff/:id', (req, res) => {
 
 // --- Reports ---
 app.get('/api/reports/sales', (req, res) => {
+  const { period = 'monthly', date } = req.query;
+  const reqDate = date ? new Date(date) : new Date();
+  
+  // Seed based on period and date to ensure deterministic but changing data
+  const seedStr = `${period}-${reqDate.getFullYear()}-${reqDate.getMonth()}-${period === 'daily' ? reqDate.getDate() : 1}`;
+  let seed = 0;
+  for (let i = 0; i < seedStr.length; i++) {
+    seed += seedStr.charCodeAt(i);
+  }
+
+  const mult = period === "yearly" ? 12 : period === "monthly" ? 4 : 1;
+  const baseSales = 25000;
+  
   res.json({
     success: true,
     data: {
-      totalSales: 150000,
-      totalOrders: 25,
-      avgOrderValue: 6000,
-      topPaymentMode: "UPI"
+      totalSales: (baseSales + (seed % 10000)) * mult,
+      totalOrders: (10 + (seed % 20)) * mult,
+      avgOrderValue: 6000 + (seed % 1000),
+      topPaymentMode: seed % 2 === 0 ? "UPI" : "Card",
+      grossProfit: (baseSales * 0.4 + (seed % 3000)) * mult,
+      expenses: (baseSales * 0.15 + (seed % 1000)) * mult,
+      netProfit: (baseSales * 0.25 + (seed % 2000)) * mult
     }
   });
 });
 
 app.get('/api/reports/top-products', (req, res) => {
-  res.json({ success: true, data: [] });
+  const { period = 'monthly', date } = req.query;
+  const reqDate = date ? new Date(date) : new Date();
+  
+  const seedStr = `${period}-${reqDate.getFullYear()}-${reqDate.getMonth()}-${period === 'daily' ? reqDate.getDate() : 1}`;
+  let seed = 0;
+  for (let i = 0; i < seedStr.length; i++) {
+    seed += seedStr.charCodeAt(i);
+  }
+
+  const mult = period === "yearly" ? 12 : period === "monthly" ? 4 : 1;
+  
+  const products = [
+    { _id: "p1", name: "iPhone 15 128GB", unitsSold: Math.floor(10 * mult + (seed % 5)), revenue: (125800 + (seed % 1000)) * mult },
+    { _id: "p2", name: "Galaxy S24 256GB", unitsSold: Math.floor(8 * mult + (seed % 4)), revenue: (74999 + (seed % 800)) * mult },
+    { _id: "p3", name: "AirPods Pro", unitsSold: Math.floor(25 * mult + (seed % 10)), revenue: (62500 + (seed % 500)) * mult },
+    { _id: "p4", name: "MacBook Air M3", unitsSold: Math.floor(3 * mult + (seed % 2)), revenue: (300000 + (seed % 2000)) * mult },
+    { _id: "p5", name: "Boat Airdopes 141", unitsSold: Math.floor(22 * mult + (seed % 6)), revenue: (28578 + (seed % 300)) * mult }
+  ];
+
+  // Shuffle or sort based on period
+  if (period === "monthly") products.reverse();
+  if (period === "daily") products.sort((a, b) => b.unitsSold - a.unitsSold);
+
+  res.json({ 
+    success: true, 
+    data: products
+  });
 });
 
 // --- Expenses ---
 app.get('/api/expenses', (req, res) => {
-  res.json({ success: true, data: mockData.expenses });
+  let results = mockData.expenses;
+  const { month, year } = req.query;
+  if (month && year) {
+    results = results.filter(e => {
+      const d = new Date(e.createdAt);
+      return d.getMonth() + 1 === parseInt(month) && d.getFullYear() === parseInt(year);
+    });
+  }
+  res.json({ success: true, data: results });
 });
 
 app.post('/api/expenses', (req, res) => {
   const e = { _id: uuidv4(), createdAt: new Date().toISOString(), ...req.body };
   mockData.expenses.push(e);
   res.json({ success: true, data: e });
+});
+
+app.patch('/api/expenses/:id', (req, res) => {
+  const idx = mockData.expenses.findIndex(e => e._id === req.params.id);
+  if (idx !== -1) {
+    mockData.expenses[idx] = { ...mockData.expenses[idx], ...req.body, updatedAt: new Date().toISOString() };
+    res.json({ success: true, data: mockData.expenses[idx] });
+  } else {
+    res.status(404).json({ success: false, message: "Expense not found" });
+  }
+});
+
+app.delete('/api/expenses/:id', (req, res) => {
+  mockData.expenses = mockData.expenses.filter(e => e._id !== req.params.id);
+  res.json({ success: true });
 });
 
 // --- Inquiries ---
@@ -404,12 +508,48 @@ app.post('/api/inquiries', (req, res) => {
   res.json({ success: true, data: i });
 });
 
+// --- Users Management ---
+app.get('/api/users', (req, res) => {
+  res.json({ success: true, data: mockData.users || [] });
+});
+
+app.post('/api/users', (req, res) => {
+  if (!mockData.users) mockData.users = [];
+  const u = { _id: uuidv4(), createdAt: new Date().toISOString(), ...req.body };
+  mockData.users.push(u);
+  res.json({ success: true, data: u });
+});
+
+app.patch('/api/users/:id', (req, res) => {
+  if (!mockData.users) mockData.users = [];
+  const idx = mockData.users.findIndex(x => x._id === req.params.id);
+  if (idx !== -1) {
+    mockData.users[idx] = { ...mockData.users[idx], ...req.body };
+    res.json({ success: true, data: mockData.users[idx] });
+  } else {
+    res.status(404).json({ success: false, message: "User not found" });
+  }
+});
+
+app.delete('/api/users/:id', (req, res) => {
+  if (!mockData.users) mockData.users = [];
+  const idx = mockData.users.findIndex(x => x._id === req.params.id);
+  if (idx !== -1) {
+    mockData.users.splice(idx, 1);
+    res.json({ success: true, message: "User deleted" });
+  } else {
+    res.status(404).json({ success: false, message: "User not found" });
+  }
+});
+
 // Fallback
 app.use((req, res) => {
   res.status(404).json({ success: false, message: "Endpoint not found" });
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Mock backend running on http://0.0.0.0:${PORT}`);
+const HOST = process.env.HOST || '0.0.0.0';
+
+app.listen(PORT, HOST, () => {
+  console.log(`Mock backend running on http://${HOST}:${PORT}`);
 });

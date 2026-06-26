@@ -116,7 +116,7 @@ export default function BarcodeScannerScreen() {
         <Ionicons name="camera-outline" size={56} color={colors.text3} />
         <Text style={styles.permTitle}>Camera permission required</Text>
         <Text style={styles.permSub}>
-          ElectroShop needs camera access to scan product barcodes.
+          Goldy Mobiles needs camera access to scan product barcodes.
         </Text>
         <Pressable
           style={[styles.permBtn, { backgroundColor: colors.primary }]}

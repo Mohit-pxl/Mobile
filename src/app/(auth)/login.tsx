@@ -1,6 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -23,149 +22,131 @@ export default function LoginScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { sendOtp, enterGuestMode, devLogin } = useAuth();
+  const { devLogin } = useAuth(); // We use devLogin to mock success for now
 
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [devLoading, setDevLoading] = useState<string | null>(null);
 
-  const handleSend = async () => {
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/(auth)");
+    }
+  };
+
+  const handleLogin = async () => {
     if (!email.trim() || !email.includes("@")) {
       Alert.alert("Invalid email", "Please enter a valid email address.");
       return;
     }
+    if (!password) {
+      Alert.alert("Missing password", "Please enter your password.");
+      return;
+    }
+
     setLoading(true);
     try {
-      await sendOtp(email.trim().toLowerCase());
+      // MOCK BACKEND LOGIN DELAY
+      await new Promise(r => setTimeout(r, 1000));
+      // For now, assume success and log in as a customer (or admin if email indicates)
+      const role = email.includes("admin") ? "admin" : email.includes("staff") ? "staff" : "customer";
+      await devLogin(role as any);
+      
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.push({ pathname: "/(auth)/otp", params: { email: email.trim().toLowerCase() } });
+      // Navigation is handled automatically by AuthGuard in _layout
     } catch (e: unknown) {
-      Alert.alert("Error", e instanceof Error ? e.message : "Failed to send OTP");
+      Alert.alert("Error", e instanceof Error ? e.message : "Failed to log in");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGuest = () => {
-    enterGuestMode();
-    router.replace("/(tabs)");
-  };
-
-  const handleDev = async (role: "admin" | "staff" | "customer") => {
-    setDevLoading(role);
-    try {
-      await devLogin(role);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } finally {
-      setDevLoading(null);
-    }
-  };
-
-  const DEV_ROLES: { role: "admin" | "staff" | "customer"; label: string; icon: string; color: string }[] = [
-    { role: "admin",    label: "Admin",    icon: "🛡️", color: colors.redText },
-    { role: "staff",    label: "Staff",    icon: "🧑‍💼", color: colors.primary },
-    { role: "customer", label: "Customer", icon: "🛍️", color: colors.blueText },
-  ];
-
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <View style={[styles.root, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+        
+        <View style={styles.header}>
+          <Pressable onPress={handleBack} hitSlop={12} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={24} color={colors.foreground} />
+          </Pressable>
+          <Text style={[styles.title, { color: colors.foreground }]}>Welcome back</Text>
+        </View>
+
         <View style={styles.center}>
-          <LinearGradient colors={["#2a2000", "#1a1a1a"]} style={styles.logoBox}>
-            <Ionicons name="flash" size={38} color={colors.primary} />
-          </LinearGradient>
-
-          <Text style={[styles.appName, { color: colors.foreground }]}>ElectroShop</Text>
-          <Text style={[styles.tagline, { color: colors.text3 }]}>Indore's premium electronics store</Text>
-
           <View style={styles.form}>
-            <Text style={[styles.label, { color: colors.text2 }]}>Email address</Text>
+            <Text style={[styles.label, { color: colors.text2 }]}>Email Address</Text>
             <View style={[styles.inputRow, { backgroundColor: colors.bg3, borderColor: colors.border2 }]}>
               <Ionicons name="mail-outline" size={18} color={colors.text3} />
               <TextInput
                 style={[styles.input, { color: colors.foreground }]}
-                placeholder="Enter your email"
+                placeholder="you@example.com"
                 placeholderTextColor={colors.text3}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
                 value={email}
                 onChangeText={setEmail}
-                onSubmitEditing={handleSend}
+              />
+            </View>
+
+            <Text style={[styles.label, { color: colors.text2, marginTop: 8 }]}>Password</Text>
+            <View style={[styles.inputRow, { backgroundColor: colors.bg3, borderColor: colors.border2 }]}>
+              <Ionicons name="lock-closed-outline" size={18} color={colors.text3} />
+              <TextInput
+                style={[styles.input, { color: colors.foreground }]}
+                placeholder="Enter your password"
+                placeholderTextColor={colors.text3}
+                secureTextEntry
+                value={password}
+                onChangeText={setPassword}
+                onSubmitEditing={handleLogin}
                 returnKeyType="done"
               />
             </View>
 
             <Pressable
-              style={[styles.btnPrimary, { backgroundColor: colors.primary, opacity: loading ? 0.7 : 1 }]}
-              onPress={handleSend}
+              style={{ alignSelf: "flex-end", paddingVertical: 8 }}
+              onPress={() => router.push("/(auth)/forgot-password")}
+            >
+              <Text style={{ fontSize: 13, color: colors.primary, fontFamily: "Inter_600SemiBold" }}>
+                Forgot Password?
+              </Text>
+            </Pressable>
+
+            <Pressable
+              style={[styles.btnPrimary, { backgroundColor: colors.primary, opacity: loading ? 0.7 : 1, marginTop: 8 }]}
+              onPress={handleLogin}
               disabled={loading}
             >
               {loading ? (
                 <ActivityIndicator color="#000" />
               ) : (
-                <Text style={[styles.btnText, { color: colors.primaryForeground }]}>Send OTP</Text>
+                <Text style={[styles.btnText, { color: colors.primaryForeground }]}>Login</Text>
               )}
             </Pressable>
-
-            <Text style={[styles.staffNote, { color: colors.text3 }]}>
-              Staff? Your admin will share your login details separately.
-            </Text>
-          </View>
-
-          {/* ── Dev bypass ── */}
-          <View style={[styles.devBox, { backgroundColor: colors.bg3, borderColor: colors.border2 }]}>
-            <View style={styles.devHeader}>
-              <Ionicons name="code-working-outline" size={13} color={colors.text3} />
-              <Text style={[styles.devTitle, { color: colors.text3 }]}>DEV LOGIN — no backend needed</Text>
-            </View>
-            <View style={styles.devRow}>
-              {DEV_ROLES.map(({ role, label, icon, color }) => (
-                <Pressable
-                  key={role}
-                  style={[styles.devBtn, { borderColor: color + "44", backgroundColor: color + "11" }]}
-                  onPress={() => handleDev(role)}
-                  disabled={devLoading !== null}
-                >
-                  {devLoading === role ? (
-                    <ActivityIndicator size="small" color={color} />
-                  ) : (
-                    <>
-                      <Text style={styles.devBtnIcon}>{icon}</Text>
-                      <Text style={[styles.devBtnLabel, { color }]}>{label}</Text>
-                    </>
-                  )}
-                </Pressable>
-              ))}
-            </View>
           </View>
         </View>
-
-        <Pressable style={styles.guestBtn} onPress={handleGuest}>
-          <Text style={[styles.guestText, { color: colors.text2 }]}>Browse catalog without signing in →</Text>
-        </Pressable>
-
-        <View style={{ height: insets.bottom + 16 }} />
       </View>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, paddingHorizontal: 24 },
-  center: { flex: 1, justifyContent: "center", alignItems: "center", gap: 8 },
-  logoBox: {
-    width: 80,
-    height: 80,
-    borderRadius: 22,
+  root: { flex: 1 },
+  header: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 8,
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 24,
   },
-  appName: { fontSize: 26, fontWeight: "800", fontFamily: "Inter_700Bold", letterSpacing: -0.5 },
-  tagline: { fontSize: 13, fontFamily: "Inter_400Regular", marginBottom: 32 },
+  backBtn: { marginRight: 16 },
+  title: { fontSize: 24, fontWeight: "800", fontFamily: "Inter_700Bold", letterSpacing: -0.5 },
+  center: { flex: 1, paddingHorizontal: 24, justifyContent: "center", paddingBottom: 60 },
   form: { width: "100%", gap: 12 },
-  label: { fontSize: 12, fontFamily: "Inter_500Medium" },
+  label: { fontSize: 13, fontFamily: "Inter_500Medium" },
   inputRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -173,41 +154,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 10,
     paddingHorizontal: 14,
-    paddingVertical: 13,
+    height: 46,
   },
   input: { flex: 1, fontSize: 14, fontFamily: "Inter_400Regular" },
   btnPrimary: {
     borderRadius: 10,
-    paddingVertical: 14,
+    paddingVertical: 16,
     alignItems: "center",
     justifyContent: "center",
   },
-  btnText: { fontSize: 14, fontWeight: "700", fontFamily: "Inter_700Bold" },
-  staffNote: { fontSize: 11, textAlign: "center", lineHeight: 16, fontFamily: "Inter_400Regular" },
-  devBox: {
-    width: "100%",
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 14,
-    gap: 10,
-    marginTop: 20,
-    borderStyle: "dashed",
-  },
-  devHeader: { flexDirection: "row", alignItems: "center", gap: 6 },
-  devTitle: { fontSize: 10, fontFamily: "Inter_500Medium", letterSpacing: 0.4 },
-  devRow: { flexDirection: "row", gap: 8 },
-  devBtn: {
-    flex: 1,
-    borderWidth: 1,
-    borderRadius: 9,
-    paddingVertical: 10,
-    alignItems: "center",
-    gap: 4,
-    minHeight: 52,
-    justifyContent: "center",
-  },
-  devBtnIcon: { fontSize: 18 },
-  devBtnLabel: { fontSize: 11, fontWeight: "700", fontFamily: "Inter_700Bold" },
-  guestBtn: { alignItems: "center", paddingBottom: 8 },
-  guestText: { fontSize: 12, fontFamily: "Inter_500Medium" },
+  btnText: { fontSize: 15, fontWeight: "700", fontFamily: "Inter_700Bold" },
 });

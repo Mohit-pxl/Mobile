@@ -9,28 +9,37 @@ import { useColors } from "@/hooks/useColors";
 import { apiGet, Product, SalesReport } from "@/services/api";
 import { useQuery } from "@tanstack/react-query";
 
-const PERIODS = ["Today", "Week", "Month", "Year"] as const;
+const PERIODS = ["Monthly", "Yearly", "Daily"] as const;
 type Period = (typeof PERIODS)[number];
 
 export default function ReportsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const [period, setPeriod] = useState<Period>("Month");
+  const [period, setPeriod] = useState<Period>("Monthly");
+  const [date, setDate] = useState(new Date());
 
   const salesQuery = useQuery({
-    queryKey: ["reports-sales", period],
+    queryKey: ["reports-sales", period, date.toISOString()],
     queryFn: async () => {
-      const res = await apiGet<SalesReport>(`/reports/sales?period=${period.toLowerCase()}`);
-      return res.data;
+      try {
+        const res = await apiGet<SalesReport>(`/reports/sales?period=${period.toLowerCase()}&date=${date.toISOString()}`);
+        return res.data;
+      } catch (e) {
+        return null;
+      }
     },
   });
 
   const topProductsQuery = useQuery({
-    queryKey: ["reports-top-products", period],
+    queryKey: ["reports-top-products", period, date.toISOString()],
     queryFn: async () => {
-      const res = await apiGet<(Product & { unitsSold: number; revenue: number })[]>(`/reports/top-products?period=${period.toLowerCase()}&limit=5`);
-      return res.data || [];
+      try {
+        const res = await apiGet<(Product & { unitsSold: number; revenue: number })[]>(`/reports/top-products?period=${period.toLowerCase()}&date=${date.toISOString()}&limit=5`);
+        return res.data || [];
+      } catch (e) {
+        return [];
+      }
     },
   });
 
@@ -46,6 +55,26 @@ export default function ReportsScreen() {
   const data = salesQuery.data;
   const topProducts = topProductsQuery.data || [];
   const lowStock = lowStockQuery.data || [];
+
+  let displayDate = "";
+  if (period === "Yearly") displayDate = `Year ${date.getFullYear()}`;
+  else if (period === "Monthly") displayDate = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+  else if (period === "Daily") displayDate = date.toLocaleString('default', { day: 'numeric', month: 'short', year: 'numeric' });
+
+  const handlePrev = () => {
+    const nd = new Date(date);
+    if (period === "Yearly") nd.setFullYear(nd.getFullYear() - 1);
+    else if (period === "Monthly") nd.setMonth(nd.getMonth() - 1);
+    else if (period === "Daily") nd.setDate(nd.getDate() - 1);
+    setDate(nd);
+  };
+  const handleNext = () => {
+    const nd = new Date(date);
+    if (period === "Yearly") nd.setFullYear(nd.getFullYear() + 1);
+    else if (period === "Monthly") nd.setMonth(nd.getMonth() + 1);
+    else if (period === "Daily") nd.setDate(nd.getDate() + 1);
+    setDate(nd);
+  };
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
@@ -69,15 +98,29 @@ export default function ReportsScreen() {
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: insets.bottom + 24 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 4 }}>
+           <Pressable onPress={handlePrev} style={{ padding: 6 }}>
+              <Ionicons name="chevron-back" size={20} color={colors.text2} />
+           </Pressable>
+           <Text style={{ fontSize: 14, fontFamily: "Inter_600SemiBold", color: colors.foreground }}>
+             {displayDate}
+           </Text>
+           <Pressable onPress={handleNext} style={{ padding: 6 }}>
+              <Ionicons name="chevron-forward" size={20} color={colors.text2} />
+           </Pressable>
+        </View>
+
         {salesQuery.isLoading ? (
           <ActivityIndicator color={colors.primary} style={{ marginVertical: 20 }} />
         ) : (
-          <View style={styles.metricsGrid}>
-            <MetricCard value={fmt(data?.totalSales || 0)} label="Revenue" valueColor="accent" />
-            <MetricCard value={String(data?.totalOrders || 0)} label="Orders" />
-            <MetricCard value={fmt(data?.avgOrderValue || 0)} label="Avg order" />
-            <MetricCard value={(data?.topPaymentMode || "–").toUpperCase()} label="Top payment" />
-          </View>
+          <>
+            <View style={styles.metricsGrid}>
+              <MetricCard value={fmt(data?.totalSales || 0)} label="Sales" />
+              <MetricCard value={fmt(data?.grossProfit || 0)} label="Gross profit" valueColor="green" />
+              <MetricCard value={fmt(data?.expenses || 0)} label="Expenses" valueColor="red" />
+              <MetricCard value={fmt(data?.netProfit || 0)} label="Net profit" valueColor="green" />
+            </View>
+          </>
         )}
 
         <Text style={[styles.sectionLabel, { color: colors.text3 }]}>Top Products · {period}</Text>
@@ -89,11 +132,14 @@ export default function ReportsScreen() {
           ) : (
             topProducts.map((p, i) => (
               <View key={p._id} style={[styles.topRow, { borderBottomColor: colors.border }]}>
-                <Text style={[styles.rank, { color: colors.primary }]}>#{i + 1}</Text>
+                <Text style={[styles.rank, { color: colors.text3 }]}>{i + 1}</Text>
                 <View style={styles.topInfo}>
                   <Text style={[styles.topName, { color: colors.foreground }]} numberOfLines={1}>{p.name}</Text>
-                  <Text style={[styles.topSub, { color: colors.text3 }]}>{p.unitsSold || 0} units · {fmt(p.revenue || 0)}</Text>
+                  <Text style={[styles.topSub, { color: colors.text3 }]}>{p.unitsSold || 0} units sold</Text>
                 </View>
+                <Text style={{ fontSize: 13, fontWeight: "700", fontFamily: "Inter_700Bold", color: colors.primary }}>
+                  {fmt(p.revenue || 0)}
+                </Text>
               </View>
             ))
           )}
@@ -118,6 +164,11 @@ export default function ReportsScreen() {
             ))
           )}
         </View>
+
+        <Pressable style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: colors.bg3, paddingVertical: 12, borderRadius: 8, borderWidth: 1, borderColor: colors.border2, marginTop: 10 }}>
+          <Ionicons name="download-outline" size={16} color={colors.text2} />
+          <Text style={{ fontSize: 12, fontFamily: "Inter_600SemiBold", color: colors.text2 }}>Export CSV / PDF</Text>
+        </Pressable>
       </ScrollView>
     </View>
   );
