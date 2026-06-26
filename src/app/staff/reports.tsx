@@ -22,16 +22,24 @@ export default function ReportsScreen() {
   const salesQuery = useQuery({
     queryKey: ["reports-sales", period, date.toISOString()],
     queryFn: async () => {
-      const res = await apiGet<SalesReport>(`/reports/sales?period=${period.toLowerCase()}&date=${date.toISOString()}`);
-      return res.data;
+      try {
+        const res = await apiGet<SalesReport>(`/reports/sales?period=${period.toLowerCase()}&date=${date.toISOString()}`);
+        return res.data;
+      } catch (e) {
+        return null;
+      }
     },
   });
 
   const topProductsQuery = useQuery({
     queryKey: ["reports-top-products", period, date.toISOString()],
     queryFn: async () => {
-      const res = await apiGet<(Product & { unitsSold: number; revenue: number })[]>(`/reports/top-products?period=${period.toLowerCase()}&date=${date.toISOString()}&limit=5`);
-      return res.data || [];
+      try {
+        const res = await apiGet<(Product & { unitsSold: number; revenue: number })[]>(`/reports/top-products?period=${period.toLowerCase()}&date=${date.toISOString()}&limit=5`);
+        return res.data || [];
+      } catch (e) {
+        return [];
+      }
     },
   });
 
@@ -106,27 +114,8 @@ export default function ReportsScreen() {
           <ActivityIndicator color={colors.primary} style={{ marginVertical: 20 }} />
         ) : (
           <>
-            <View style={[styles.card, { backgroundColor: colors.bg3, borderColor: colors.border, padding: 12 }]}>
-              <Text style={[styles.sectionLabel, { color: colors.foreground, marginBottom: 12 }]}>Sales — {displayDate}</Text>
-              <View style={{ height: 60, flexDirection: 'row', alignItems: 'flex-end', gap: 4 }}>
-                <View style={{ flex: 1, backgroundColor: colors.primary, opacity: 0.7, borderTopLeftRadius: 3, borderTopRightRadius: 3, height: '35%' }} />
-                <View style={{ flex: 1, backgroundColor: colors.primary, opacity: 0.7, borderTopLeftRadius: 3, borderTopRightRadius: 3, height: '55%' }} />
-                <View style={{ flex: 1, backgroundColor: colors.primary, opacity: 0.7, borderTopLeftRadius: 3, borderTopRightRadius: 3, height: '40%' }} />
-                <View style={{ flex: 1, backgroundColor: colors.primary, opacity: 1, borderTopLeftRadius: 3, borderTopRightRadius: 3, height: '80%' }} />
-                <View style={{ flex: 1, backgroundColor: colors.primary, opacity: 0.7, borderTopLeftRadius: 3, borderTopRightRadius: 3, height: '50%' }} />
-                <View style={{ flex: 1, backgroundColor: colors.primary, opacity: 1, borderTopLeftRadius: 3, borderTopRightRadius: 3, height: '95%' }} />
-                <View style={{ flex: 1, backgroundColor: colors.primary, opacity: 0.7, borderTopLeftRadius: 3, borderTopRightRadius: 3, height: '30%' }} />
-              </View>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 }}>
-                <Text style={{ fontSize: 9, color: colors.text3, fontFamily: "Inter_500Medium" }}>Wk 1</Text>
-                <Text style={{ fontSize: 9, color: colors.text3, fontFamily: "Inter_500Medium" }}>Wk 2</Text>
-                <Text style={{ fontSize: 9, color: colors.text3, fontFamily: "Inter_500Medium" }}>Wk 3</Text>
-                <Text style={{ fontSize: 9, color: colors.text3, fontFamily: "Inter_500Medium" }}>Wk 4</Text>
-              </View>
-            </View>
-
             <View style={styles.metricsGrid}>
-              <MetricCard value={fmt(data?.totalSales || 0)} label="Revenue" />
+              <MetricCard value={fmt(data?.totalSales || 0)} label="Sales" />
               <MetricCard value={fmt(data?.grossProfit || 0)} label="Gross profit" valueColor="green" />
               <MetricCard value={fmt(data?.expenses || 0)} label="Expenses" valueColor="red" />
               <MetricCard value={fmt(data?.netProfit || 0)} label="Net profit" valueColor="green" />

@@ -1,10 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View, Linking } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useQuery } from "@tanstack/react-query";
+
+import { apiGet } from "@/services/api";
 
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 import { useColors } from "@/hooks/useColors";
 import SignOutModal from "@/components/SignOutModal";
 
@@ -13,8 +17,17 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   const [showSignOut, setShowSignOut] = React.useState(false);
+
+  const { data: settings } = useQuery({
+    queryKey: ["settings"],
+    queryFn: async () => {
+      const res = await apiGet<{ whatsappNumber?: string }>("/settings");
+      return res.data;
+    },
+  });
 
   const handleLogout = () => {
     setShowSignOut(true);
@@ -42,7 +55,7 @@ export default function ProfileScreen() {
           <Text style={[styles.guestSub, { color: colors.text3 }]}>Sign in to track your enquiries and wishlist across devices</Text>
           <Pressable
             style={[styles.signInBtn, { backgroundColor: colors.primary }]}
-            onPress={() => router.push("/(auth)/login")}
+            onPress={() => logout()}
           >
             <Text style={{ fontFamily: "Inter_700Bold", color: "#000", fontSize: 14 }}>Sign In</Text>
           </Pressable>
@@ -85,8 +98,58 @@ export default function ProfileScreen() {
         </View>
 
         <View style={[styles.section, { borderTopColor: colors.border, borderBottomColor: colors.border, marginTop: 16 }]}>
+          <Text style={[styles.sectionLabel, { color: colors.text3 }]}>Settings</Text>
+          <MenuItem 
+            icon={theme === "light" ? "moon-outline" : "sunny-outline"} 
+            label={theme === "light" ? "Switch to Dark Theme" : "Switch to Light Theme"} 
+            onPress={toggleTheme} 
+          />
+        </View>
+
+        <View style={[styles.section, { borderTopColor: colors.border, borderBottomColor: colors.border, marginTop: 16 }]}>
           <Text style={[styles.sectionLabel, { color: colors.text3 }]}>Support</Text>
-          <MenuItem icon="logo-whatsapp" label="Contact on WhatsApp" onPress={() => {}} />
+          <MenuItem 
+            icon="call-outline" 
+            label="Call us: +91 79875 22364" 
+            color={colors.primary}
+            onPress={() => {
+              Linking.openURL("tel:+917987522364").catch(() => {
+                Alert.alert("Error", "Could not open dialer.");
+              });
+            }} 
+          />
+          <MenuItem 
+            icon="logo-whatsapp" 
+            label="Contact on WhatsApp" 
+            color="#25D366"
+            onPress={() => {
+              const phone = settings?.whatsappNumber || "+917987522364";
+              const text = encodeURIComponent(`Hi, my name is ${user.name}`);
+              Linking.openURL(`whatsapp://send?phone=${phone.replace(/\D/g, '')}&text=${text}`).catch(() => {
+                Alert.alert("WhatsApp Not Found", "Please install WhatsApp to use this feature.");
+              });
+            }} 
+          />
+          <MenuItem 
+            icon="logo-instagram" 
+            label="Follow us on Instagram" 
+            color="#E1306C"
+            onPress={() => {
+              Linking.openURL("https://www.instagram.com/goldymobilemanawar?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==").catch(() => {
+                Alert.alert("Error", "Could not open Instagram.");
+              });
+            }} 
+          />
+          <MenuItem 
+            icon="logo-facebook" 
+            label="Like us on Facebook" 
+            color="#1877F2"
+            onPress={() => {
+              Linking.openURL("https://www.facebook.com/goldymobile2222/?ref=PRODASH_UPSELL_xav_ig_profile_page_web#").catch(() => {
+                Alert.alert("Error", "Could not open Facebook.");
+              });
+            }} 
+          />
         </View>
 
         <View style={[styles.section, { borderTopColor: colors.border, borderBottomColor: colors.border, marginTop: 16 }]}>

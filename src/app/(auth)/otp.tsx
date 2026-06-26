@@ -20,22 +20,34 @@ export default function OtpScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { email } = useLocalSearchParams<{ email: string }>();
-  const { verifyOtp, sendOtp } = useAuth();
+  const { verifyOtp, sendOtp, devLogin } = useAuth();
 
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const inputRef = useRef<TextInput>(null);
 
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/(auth)");
+    }
+  };
+
   const handleVerify = async () => {
-    if (otp.length < 4) return;
+    if (otp.length < 6) return; // Require 6 digits
     setLoading(true);
     try {
-      await verifyOtp(email, otp);
+      // Mock OTP verification and account creation delay
+      await new Promise(r => setTimeout(r, 1000));
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      
+      // Auto-login as customer after registration
+      await devLogin("customer");
     } catch (e: unknown) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert("Invalid OTP", e instanceof Error ? e.message : "Please try again.");
+      Alert.alert("Invalid OTP", "Please try again.");
       setOtp("");
     } finally {
       setLoading(false);
@@ -56,7 +68,7 @@ export default function OtpScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background, paddingTop: insets.top + 24 }]}>
-      <Pressable onPress={() => router.canGoBack() ? router.canGoBack() ? router.back() : router.replace('/') : router.replace('/')} style={styles.back}>
+      <Pressable onPress={handleBack} style={styles.back} hitSlop={12}>
         <Text style={[styles.backText, { color: colors.text2 }]}>← Back</Text>
       </Pressable>
 
@@ -96,7 +108,7 @@ export default function OtpScreen() {
         <Pressable
           style={[styles.btn, { backgroundColor: colors.primary, opacity: loading ? 0.7 : 1 }]}
           onPress={handleVerify}
-          disabled={loading || otp.length < 4}
+          disabled={loading || otp.length < 6}
         >
           {loading ? (
             <ActivityIndicator color="#000" />
@@ -136,8 +148,9 @@ const styles = StyleSheet.create({
   btn: {
     width: "100%",
     borderRadius: 10,
-    paddingVertical: 14,
+    height: 46,
     alignItems: "center",
+    justifyContent: "center",
     marginTop: 8,
   },
   btnText: { fontSize: 14, fontWeight: "700", fontFamily: "Inter_700Bold" },

@@ -3,7 +3,6 @@ import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  Appearance,
   Alert,
   Pressable,
   RefreshControl,
@@ -12,7 +11,6 @@ import {
   Switch,
   Text,
   View,
-  useColorScheme,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -28,11 +26,6 @@ export default function AdminScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const qc = useQueryClient();
-  const scheme = useColorScheme();
-
-  const toggleTheme = () => {
-    Appearance.setColorScheme(scheme === 'dark' ? 'light' : 'dark');
-  };
 
   const fmt = (n: number) => `₹${n.toLocaleString("en-IN")}`;
   const fmtShort = (n: number) => {
@@ -116,9 +109,6 @@ export default function AdminScreen() {
             <Ionicons name="notifications-outline" size={22} color={colors.text2} />
             <View style={{ position: 'absolute', top: 2, right: 4, width: 8, height: 8, borderRadius: 4, backgroundColor: colors.destructive }} />
           </Pressable>
-          <Pressable onPress={toggleTheme} style={{ padding: 4 }}>
-            <Ionicons name={scheme === 'dark' ? "sunny-outline" : "moon-outline"} size={22} color={colors.text2} />
-          </Pressable>
         </View>
       </View>
 
@@ -178,6 +168,7 @@ export default function AdminScreen() {
           {[
             { icon: "bar-chart-outline", label: "Reports", path: "/staff/reports" as const },
             { icon: "people-circle-outline", label: "Staff Mgmt", path: "/staff/staff-mgmt" as const },
+            { icon: "person-add-outline", label: "Users Mgmt", path: "/staff/users-mgmt" as const },
             { icon: "wallet-outline", label: "Expenses", path: "/staff/expenses" as const },
             { icon: "document-text-outline", label: "Quotations", path: "/staff/quotations" as const },
             { icon: "people-outline", label: "Khata", path: "/staff/khata" as const },
