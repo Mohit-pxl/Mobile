@@ -70,6 +70,10 @@ export default function CustomerHomeScreen() {
           <Pressable onPress={() => router.push("/(tabs)/search")} hitSlop={8}>
             <Ionicons name="search-outline" size={22} color={colors.text2} />
           </Pressable>
+          <Pressable onPress={() => router.push("/(tabs)/notifications")} hitSlop={8} style={{ position: 'relative' }}>
+            <Ionicons name="notifications-outline" size={22} color={colors.text2} />
+            <View style={{ position: 'absolute', top: -2, right: -2, width: 8, height: 8, borderRadius: 4, backgroundColor: colors.destructive }} />
+          </Pressable>
           <Pressable onPress={toggleTheme} hitSlop={8}>
             <Ionicons name={scheme === 'dark' ? "sunny-outline" : "moon-outline"} size={22} color={colors.text2} />
           </Pressable>
